@@ -9,6 +9,10 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Bind dynamically to PORT env variable assigned by Render container
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://*:{port}");
+
 // Add CORS Policy for Frontend Portals (Admin & Storefront)
 builder.Services.AddCors(options =>
 {
@@ -59,11 +63,18 @@ var app = builder.Build();
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
 // Automatically create database and tables if they don't exist
-using (var scope = app.Services.CreateScope())
+try
 {
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.EnsureCreated();
-    await DbInitializer.SeedAsync(db);
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        db.Database.EnsureCreated();
+        await DbInitializer.SeedAsync(db);
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Database initialization notice: {ex.Message}");
 }
 
 app.UseCors("AllowFrontendPortals");
