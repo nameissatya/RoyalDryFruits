@@ -1,0 +1,39 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "KiranaFlow.Application/1.0.0": {
+        "dependencies": {
+          "KiranaFlow.Domain": "1.0.0"
+        },
+        "runtime": {
+          "KiranaFlow.Application.dll": {}
+        }
+      },
+      "KiranaFlow.Domain/1.0.0": {
+        "runtime": {
+          "KiranaFlow.Domain.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "KiranaFlow.Application/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "KiranaFlow.Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

@@ -1,0 +1,17 @@
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Infrastructure\bin\Debug\net10.0\RoyalDryFruits.Infrastructure.deps.json
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Infrastructure\bin\Debug\net10.0\RoyalDryFruits.Infrastructure.dll
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Infrastructure\bin\Debug\net10.0\RoyalDryFruits.Infrastructure.pdb
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Infrastructure\bin\Debug\net10.0\RoyalDryFruits.Application.dll
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Infrastructure\bin\Debug\net10.0\RoyalDryFruits.Domain.dll
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Infrastructure\bin\Debug\net10.0\RoyalDryFruits.Application.pdb
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Infrastructure\bin\Debug\net10.0\RoyalDryFruits.Domain.pdb
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Infrastructure\obj\Debug\net10.0\RoyalDryFruits.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Infrastructure\obj\Debug\net10.0\RoyalDryFruits.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Infrastructure\obj\Debug\net10.0\RoyalDryFruits.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Infrastructure\obj\Debug\net10.0\RoyalDryFruits.Infrastructure.AssemblyInfo.cs
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Infrastructure\obj\Debug\net10.0\RoyalDryFruits.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Infrastructure\obj\Debug\net10.0\RoyalDry.956524CE.Up2Date
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Infrastructure\obj\Debug\net10.0\RoyalDryFruits.Infrastructure.dll
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Infrastructure\obj\Debug\net10.0\refint\RoyalDryFruits.Infrastructure.dll
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Infrastructure\obj\Debug\net10.0\RoyalDryFruits.Infrastructure.pdb
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Infrastructure\obj\Debug\net10.0\ref\RoyalDryFruits.Infrastructure.dll

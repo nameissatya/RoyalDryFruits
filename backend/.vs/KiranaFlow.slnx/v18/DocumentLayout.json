@@ -1,0 +1,117 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Satya\\Self Projects\\KiranaFlow\\backend\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{5B4F7D3A-0E85-430A-0FD1-DE69FE068617}|src\\KiranaFlow.API\\KiranaFlow.API.csproj|c:\\users\\satya\\self projects\\kiranaflow\\backend\\src\\kiranaflow.api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5B4F7D3A-0E85-430A-0FD1-DE69FE068617}|src\\KiranaFlow.API\\KiranaFlow.API.csproj|solutionrelative:src\\kiranaflow.api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5B4F7D3A-0E85-430A-0FD1-DE69FE068617}|src\\KiranaFlow.API\\KiranaFlow.API.csproj|c:\\users\\satya\\self projects\\kiranaflow\\backend\\src\\kiranaflow.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5B4F7D3A-0E85-430A-0FD1-DE69FE068617}|src\\KiranaFlow.API\\KiranaFlow.API.csproj|solutionrelative:src\\kiranaflow.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FCBB5F92-2848-5625-CAB6-53CBB50ED9A7}|src\\KiranaFlow.Infrastructure\\KiranaFlow.Infrastructure.csproj|c:\\users\\satya\\self projects\\kiranaflow\\backend\\src\\kiranaflow.infrastructure\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FCBB5F92-2848-5625-CAB6-53CBB50ED9A7}|src\\KiranaFlow.Infrastructure\\KiranaFlow.Infrastructure.csproj|solutionrelative:src\\kiranaflow.infrastructure\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FCBB5F92-2848-5625-CAB6-53CBB50ED9A7}|src\\KiranaFlow.Infrastructure\\KiranaFlow.Infrastructure.csproj|c:\\users\\satya\\self projects\\kiranaflow\\backend\\src\\kiranaflow.infrastructure\\extensions\\serviceextensions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FCBB5F92-2848-5625-CAB6-53CBB50ED9A7}|src\\KiranaFlow.Infrastructure\\KiranaFlow.Infrastructure.csproj|solutionrelative:src\\kiranaflow.infrastructure\\extensions\\serviceextensions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FCBB5F92-2848-5625-CAB6-53CBB50ED9A7}|src\\KiranaFlow.Infrastructure\\KiranaFlow.Infrastructure.csproj|c:\\users\\satya\\self projects\\kiranaflow\\backend\\src\\kiranaflow.infrastructure\\services\\jwtservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FCBB5F92-2848-5625-CAB6-53CBB50ED9A7}|src\\KiranaFlow.Infrastructure\\KiranaFlow.Infrastructure.csproj|solutionrelative:src\\kiranaflow.infrastructure\\services\\jwtservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5B4F7D3A-0E85-430A-0FD1-DE69FE068617}|src\\KiranaFlow.API\\KiranaFlow.API.csproj|c:\\users\\satya\\self projects\\kiranaflow\\backend\\src\\kiranaflow.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{5B4F7D3A-0E85-430A-0FD1-DE69FE068617}|src\\KiranaFlow.API\\KiranaFlow.API.csproj|solutionrelative:src\\kiranaflow.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Satya\\Self Projects\\KiranaFlow\\backend\\src\\KiranaFlow.API\\Program.cs",
+              "RelativeDocumentMoniker": "src\\KiranaFlow.API\\Program.cs",
+              "ToolTip": "C:\\Users\\Satya\\Self Projects\\KiranaFlow\\backend\\src\\KiranaFlow.API\\Program.cs",
+              "RelativeToolTip": "src\\KiranaFlow.API\\Program.cs",
+              "ViewState": "AgIAACgAAAAAAAAAAAAuwDAAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T09:11:10.065Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "C:\\Users\\Satya\\Self Projects\\KiranaFlow\\backend\\src\\KiranaFlow.API\\Controllers\\AuthController.cs",
+              "RelativeDocumentMoniker": "src\\KiranaFlow.API\\Controllers\\AuthController.cs",
+              "ToolTip": "C:\\Users\\Satya\\Self Projects\\KiranaFlow\\backend\\src\\KiranaFlow.API\\Controllers\\AuthController.cs",
+              "RelativeToolTip": "src\\KiranaFlow.API\\Controllers\\AuthController.cs",
+              "ViewState": "AgIAABEAAAAAAAAAAAAuwBsAAABAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T09:08:18.65Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "AuthService.cs",
+              "DocumentMoniker": "C:\\Users\\Satya\\Self Projects\\KiranaFlow\\backend\\src\\KiranaFlow.Infrastructure\\Services\\AuthService.cs",
+              "RelativeDocumentMoniker": "src\\KiranaFlow.Infrastructure\\Services\\AuthService.cs",
+              "ToolTip": "C:\\Users\\Satya\\Self Projects\\KiranaFlow\\backend\\src\\KiranaFlow.Infrastructure\\Services\\AuthService.cs",
+              "RelativeToolTip": "src\\KiranaFlow.Infrastructure\\Services\\AuthService.cs",
+              "ViewState": "AgIAADgAAAAAAAAAAAAQwEwAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T09:05:59.242Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "ServiceExtensions.cs",
+              "DocumentMoniker": "C:\\Users\\Satya\\Self Projects\\KiranaFlow\\backend\\src\\KiranaFlow.Infrastructure\\Extensions\\ServiceExtensions.cs",
+              "RelativeDocumentMoniker": "src\\KiranaFlow.Infrastructure\\Extensions\\ServiceExtensions.cs",
+              "ToolTip": "C:\\Users\\Satya\\Self Projects\\KiranaFlow\\backend\\src\\KiranaFlow.Infrastructure\\Extensions\\ServiceExtensions.cs",
+              "RelativeToolTip": "src\\KiranaFlow.Infrastructure\\Extensions\\ServiceExtensions.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAApAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T09:05:31.484Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "JwtService.cs",
+              "DocumentMoniker": "C:\\Users\\Satya\\Self Projects\\KiranaFlow\\backend\\src\\KiranaFlow.Infrastructure\\Services\\JwtService.cs",
+              "RelativeDocumentMoniker": "src\\KiranaFlow.Infrastructure\\Services\\JwtService.cs",
+              "ToolTip": "C:\\Users\\Satya\\Self Projects\\KiranaFlow\\backend\\src\\KiranaFlow.Infrastructure\\Services\\JwtService.cs",
+              "RelativeToolTip": "src\\KiranaFlow.Infrastructure\\Services\\JwtService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADMAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T09:00:06.212Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\Satya\\Self Projects\\KiranaFlow\\backend\\src\\KiranaFlow.API\\appsettings.json",
+              "RelativeDocumentMoniker": "src\\KiranaFlow.API\\appsettings.json",
+              "ToolTip": "C:\\Users\\Satya\\Self Projects\\KiranaFlow\\backend\\src\\KiranaFlow.API\\appsettings.json",
+              "RelativeToolTip": "src\\KiranaFlow.API\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-07-29T08:59:25.256Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

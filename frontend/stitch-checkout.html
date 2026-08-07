@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Checkout - Royal Dry Fruits</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed": "#c8f17a",
+                      "surface-container-high": "#efe8d5",
+                      "surface-tint": "#7c5731",
+                      "primary": "#301800",
+                      "surface-variant": "#e9e2d0",
+                      "secondary-fixed": "#ffdcc5",
+                      "on-primary-fixed": "#2d1600",
+                      "inverse-on-surface": "#f7f0de",
+                      "on-surface": "#1e1c10",
+                      "on-error-container": "#93000a",
+                      "on-secondary-fixed": "#301400",
+                      "on-tertiary-fixed": "#131f00",
+                      "inverse-surface": "#333024",
+                      "on-secondary-fixed-variant": "#713700",
+                      "surface-dim": "#e0dac7",
+                      "tertiary-container": "#263800",
+                      "surface-container-highest": "#e9e2d0",
+                      "on-secondary-container": "#663100",
+                      "primary-container": "#4a2c0a",
+                      "on-primary": "#ffffff",
+                      "on-tertiary-fixed-variant": "#364e00",
+                      "error-container": "#ffdad6",
+                      "secondary-fixed-dim": "#ffb783",
+                      "primary-fixed-dim": "#eebd90",
+                      "surface-container": "#f4eedb",
+                      "on-primary-fixed-variant": "#613f1c",
+                      "on-surface-variant": "#50453b",
+                      "tertiary": "#152100",
+                      "tertiary-fixed-dim": "#add461",
+                      "primary-fixed": "#ffdcbe",
+                      "on-tertiary-container": "#82a73a",
+                      "surface-bright": "#fff9eb",
+                      "surface": "#fff9eb",
+                      "secondary-container": "#fc8f34",
+                      "secondary": "#944a00",
+                      "on-tertiary": "#ffffff",
+                      "outline-variant": "#d4c4b7",
+                      "error": "#ba1a1a",
+                      "surface-container-lowest": "#ffffff",
+                      "on-error": "#ffffff",
+                      "inverse-primary": "#eebd90",
+                      "surface-container-low": "#faf3e0",
+                      "on-background": "#1e1c10",
+                      "outline": "#82756a",
+                      "on-secondary": "#ffffff",
+                      "background": "#fff9eb",
+                      "on-primary-container": "#bf9268"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-desktop": "48px",
+                      "container-max": "1280px",
+                      "gutter": "24px",
+                      "margin-mobile": "16px",
+                      "unit": "8px"
+              },
+              "fontFamily": {
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "display-lg-mobile": [
+                              "Montserrat"
+                      ],
+                      "headline-md": [
+                              "Montserrat"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-sm": [
+                              "Montserrat"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Montserrat"
+                      ]
+              },
+              "fontSize": {
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        body {
+            background-color: #fff9eb;
+            color: #1e1c10;
+        }
+        .ambient-shadow {
+            box-shadow: 0 4px 20px 0 rgba(48, 24, 0, 0.06);
+        }
+        .input-focus-ring:focus {
+            box-shadow: 0 0 0 2px rgba(124, 87, 49, 0.2);
+            border-color: #7c5731;
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md antialiased min-h-screen flex flex-col relative">
+<!-- Top Navigation (Shell suppressed as this is a linear transactional checkout flow, but keeping a minimal brand header as per standard e-commerce practice to maintain trust) -->
+<header class="w-full bg-background border-b border-outline-variant/20 sticky top-0 z-40 h-20 flex items-center px-margin-mobile md:px-margin-desktop shadow-sm">
+<div class="max-w-container-max mx-auto w-full flex justify-center items-center">
+<a class="font-headline-md text-headline-md font-bold text-primary" href="#">Royal Dry Fruits</a>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-8 md:py-12">
+<div class="mb-8">
+<h1 class="font-display-lg-mobile md:font-display-lg text-primary text-display-lg-mobile md:text-display-lg mb-2">Checkout</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Complete your order securely.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
+<!-- Left Column: Forms and Map -->
+<div class="lg:col-span-8 flex flex-col gap-8">
+<!-- Contact Information -->
+<section class="bg-surface-container rounded-xl p-6 ambient-shadow">
+<h2 class="font-headline-sm text-headline-sm text-primary mb-6 flex items-center gap-2 border-b border-outline-variant/30 pb-4">
+<span class="material-symbols-outlined text-secondary">person</span>
+                        Contact Information
+                    </h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface-variant" for="fullName">Full Name</label>
+<input class="bg-surface border border-outline-variant/50 rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface outline-none input-focus-ring transition-shadow" id="fullName" placeholder="John Doe" required="" type="text"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface-variant" for="phone">Phone Number</label>
+<input class="bg-surface border border-outline-variant/50 rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface outline-none input-focus-ring transition-shadow" id="phone" placeholder="+1 (555) 000-0000" required="" type="tel"/>
+</div>
+</div>
+</section>
+<!-- Delivery Address & Map -->
+<section class="bg-surface-container rounded-xl p-6 ambient-shadow">
+<h2 class="font-headline-sm text-headline-sm text-primary mb-6 flex items-center gap-2 border-b border-outline-variant/30 pb-4">
+<span class="material-symbols-outlined text-secondary">location_on</span>
+                        Delivery Details
+                    </h2>
+<div class="mb-6">
+<div class="flex items-start gap-3 bg-secondary-container/20 p-4 rounded-lg border border-secondary-container/30">
+<span class="material-symbols-outlined text-secondary mt-0.5">info</span>
+<p class="font-body-md text-body-md text-on-surface-variant">
+<span class="font-semibold text-secondary">COD available only within 10km of our store.</span> Please pin your exact location below for accurate delivery.
+                            </p>
+</div>
+</div>
+<div class="flex flex-col gap-6">
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface-variant" for="address">Street Address</label>
+<input class="bg-surface border border-outline-variant/50 rounded-lg px-4 py-3 font-body-md text-body-md text-on-surface outline-none input-focus-ring transition-shadow" id="address" placeholder="123 Main St, Apartment 4B" required="" type="text"/>
+</div>
+<!-- Map Section Placeholder -->
+<div class="relative w-full h-64 bg-surface-dim rounded-lg overflow-hidden border border-outline-variant/30 group">
+<img class="w-full h-full object-cover" data-alt="A stylized, clean digital map interface showing city streets in a light cream and soft beige color palette, fitting a premium organic brand. A single sophisticated dark brown map pin with a soft shadow highlights a specific location. The design is modern, minimalist, and uses subtle warm tones to match the Royal Dry Fruits aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6ENSEtk8SIe23Ozsb_EqAt6_XJkwKXKPgEvPVo5Bc5YHJwYi-jZqgDDJMcfdJDtGwbhXB660CP1HoH0xz6cfZEbjD4Ffv6ww5bWf8goE-jw9irKt2sCNGXee-c0bUIvlZHPej6odAA_tCizEYj8N8nfH_ItfKAWnIDeBe_f3HmkYmhYldK5csFRFh6T1KcVH6VRZXYr1QFyB67bVw9BYG6gYPW2ndA4P6j-l5OYLI1ZD6YcAoCMAr"/>
+<!-- Interactive overlay simulation -->
+<div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+<button class="bg-surface px-4 py-2 rounded-full font-label-md text-label-md text-primary shadow-sm pointer-events-auto hover:bg-surface-container-high transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">my_location</span>
+                                    Detect Location
+                                </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Payment Method (Simplified) -->
+<section class="bg-surface-container rounded-xl p-6 ambient-shadow">
+<h2 class="font-headline-sm text-headline-sm text-primary mb-6 flex items-center gap-2 border-b border-outline-variant/30 pb-4">
+<span class="material-symbols-outlined text-secondary">payments</span>
+                        Payment
+                    </h2>
+<div class="flex flex-col gap-3">
+<label class="flex items-center gap-3 p-4 border border-secondary rounded-lg bg-secondary/5 cursor-pointer">
+<input checked="" class="text-secondary focus:ring-secondary" name="payment" type="radio"/>
+<span class="font-body-md text-body-md text-on-surface font-semibold">Cash on Delivery (COD)</span>
+</label>
+<label class="flex items-center gap-3 p-4 border border-outline-variant/50 rounded-lg bg-surface cursor-pointer opacity-50">
+<input class="text-secondary focus:ring-secondary" disabled="" name="payment" type="radio"/>
+<span class="font-body-md text-body-md text-on-surface-variant">Online Payment (Coming Soon)</span>
+</label>
+</div>
+</section>
+</div>
+<!-- Right Column: Order Review Sidebar -->
+<div class="lg:col-span-4 sticky top-28">
+<section class="bg-surface-container rounded-xl p-6 ambient-shadow flex flex-col h-full">
+<h2 class="font-headline-sm text-headline-sm text-primary mb-6 flex items-center gap-2 border-b border-outline-variant/30 pb-4">
+<span class="material-symbols-outlined text-secondary">receipt_long</span>
+                        Order Summary
+                    </h2>
+<!-- Order Items -->
+<div class="flex flex-col gap-4 mb-6 flex-grow">
+<!-- Item 1 -->
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-lg bg-surface-dim overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Close up high quality studio photography of premium whole cashews arranged neatly on a slightly darker cream surface, well lit with natural soft light, casting gentle warm ambient shadows. Minimalist composition." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOMPSaLOu9mq9kzIPc5i7HqQjiwwZIxov6Sw7QiaVqbriJ6pMoR6IsZNK4Zha8AoLkluDHgD0Dnem-Pqim8qG8-UW6HjrnL5ScOeKVl-CmXQfoZw04ljqGFEtdMaim4EEAXebtNFy5p3PeTouqo_CpLwT8wHOt1LEDEUSEXfWforoLu__Te2OBP2QWKLyzkWU6ogXKq6a_aC1yPwE50MZysle45gS8qu1ViwliKPzlMPq6sJJhtScY"/>
+</div>
+<div class="flex-grow">
+<h3 class="font-body-md text-body-md text-on-surface font-semibold">Premium Jumbo Cashews</h3>
+<p class="font-label-md text-label-md text-on-surface-variant">500g</p>
+</div>
+<div class="font-body-md text-body-md text-primary font-semibold">
+                                $24.00
+                            </div>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-lg bg-surface-dim overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Close up high quality studio photography of premium organic Afghan almonds arranged neatly on a slightly darker cream surface, well lit with natural soft light, casting gentle warm ambient shadows. Minimalist composition." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYGLEUOzwnyUinIDU5wk4R3JSW6PqNtDZ02SPiTwg9992rX17oSm2L3gQC_bJNJyh3V3YsjaBlDd5waTyidQrIDkDQew_3jg77h7xHtkB6BJ8bJUwkdTWrOJ5IYcfsc1ntKqm8xL3STShNxbIFGgFTcKXH1_zfETN17nN2muIbC7nwKrReZD7f51AzqnCbei6oHSNk4PWssm_v0BnkLsTaXFPLbbZs_XgcGymOzYN0FvzBIF1jbDI9"/>
+</div>
+<div class="flex-grow">
+<h3 class="font-body-md text-body-md text-on-surface font-semibold">Organic Afghan Almonds</h3>
+<p class="font-label-md text-label-md text-on-surface-variant">250g</p>
+</div>
+<div class="font-body-md text-body-md text-primary font-semibold">
+                                $18.50
+                            </div>
+</div>
+</div>
+<!-- Totals -->
+<div class="border-t border-outline-variant/30 pt-4 flex flex-col gap-2 mb-6">
+<div class="flex justify-between items-center font-body-md text-body-md text-on-surface-variant">
+<span>Subtotal</span>
+<span>$42.50</span>
+</div>
+<div class="flex justify-between items-center font-body-md text-body-md text-on-surface-variant">
+<span>Delivery</span>
+<span class="text-tertiary-container font-semibold">Free (Within 10km)</span>
+</div>
+<div class="flex justify-between items-center font-headline-sm text-headline-sm text-primary mt-2 pt-2 border-t border-outline-variant/30">
+<span>Total</span>
+<span>$42.50</span>
+</div>
+</div>
+<!-- Action -->
+<button class="w-full bg-primary text-on-primary font-label-md text-label-md py-4 rounded-full shadow-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2 group">
+                        Place Order
+                        <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+<p class="font-label-md text-[12px] text-center text-on-surface-variant mt-4 flex justify-center items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+                        Secure Checkout
+                    </p>
+</section>
+</div>
+</div>
+</main>
+<!-- Footer (Suppressed for Checkout to maintain focus, standard practice) -->
+</body></html>

@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/RoyalDryFruits.API/RoyalDryFruits.API.csproj" />
+    <Project Path="src/RoyalDryFruits.Application/RoyalDryFruits.Application.csproj" />
+    <Project Path="src/RoyalDryFruits.Domain/RoyalDryFruits.Domain.csproj" />
+    <Project Path="src/RoyalDryFruits.Infrastructure/RoyalDryFruits.Infrastructure.csproj" />
+  </Folder>
+</Solution>

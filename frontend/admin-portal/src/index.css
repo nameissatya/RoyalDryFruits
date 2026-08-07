@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #f7f9fb;
+    color: #191c1e;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+/* 1. Prevent blinking caret cursor & unwanted text selection on UI text */
+*,
+*:before,
+*:after {
+  caret-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* 2. Prevent I-beam cursor on general page text elements */
+body, h1, h2, h3, h4, h5, h6, p, span, div, li, label, section, header, footer, svg, img, tr, td, th {
+  cursor: default;
+}
+
+/* 3. Interactive elements get clean hand pointer cursor */
+a, button, [role="button"], input[type="submit"], input[type="button"], select, summary {
+  cursor: pointer;
+}
+
+/* 4. Restore text selection & blinking cursor ONLY inside actual input fields & textareas */
+input,
+textarea,
+[contenteditable="true"] {
+  caret-color: auto !important;
+  cursor: text !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+}
+
+.card-shadow {
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+.table-row-hover:hover {
+  background-color: #F8FAFC;
+}
+
+/* Material symbols font settings */
+.material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 24;
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 1;
+}

@@ -1,0 +1,6 @@
+@KiranaFlow.API_HostAddress = http://localhost:5024
+
+GET {{KiranaFlow.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,11 @@
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Domain\bin\Debug\net10.0\RoyalDryFruits.Domain.deps.json
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Domain\bin\Debug\net10.0\RoyalDryFruits.Domain.dll
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Domain\bin\Debug\net10.0\RoyalDryFruits.Domain.pdb
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Domain\obj\Debug\net10.0\RoyalDryFruits.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Domain\obj\Debug\net10.0\RoyalDryFruits.Domain.AssemblyInfoInputs.cache
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Domain\obj\Debug\net10.0\RoyalDryFruits.Domain.AssemblyInfo.cs
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Domain\obj\Debug\net10.0\RoyalDryFruits.Domain.csproj.CoreCompileInputs.cache
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Domain\obj\Debug\net10.0\RoyalDryFruits.Domain.dll
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Domain\obj\Debug\net10.0\refint\RoyalDryFruits.Domain.dll
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Domain\obj\Debug\net10.0\RoyalDryFruits.Domain.pdb
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Domain\obj\Debug\net10.0\ref\RoyalDryFruits.Domain.dll
