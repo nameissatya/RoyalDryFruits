@@ -82,11 +82,8 @@ app.UseCors("AllowFrontendPortals");
 // Enable serving static files from wwwroot/
 app.UseStaticFiles();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-    app.MapScalarApiReference();
-}
+app.MapOpenApi();
+app.MapScalarApiReference();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -95,6 +92,15 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
+
+app.MapGet("/", () => Results.Ok(new { 
+    status = "Online", 
+    service = "Royal Dry Fruits Backend Web API", 
+    timestamp = DateTime.UtcNow,
+    swagger = "/scalar/v1" 
+}));
+
+app.MapGet("/api", () => Results.Ok(new { status = "Online", service = "Royal Dry Fruits API" }));
 
 app.MapControllers();
 
