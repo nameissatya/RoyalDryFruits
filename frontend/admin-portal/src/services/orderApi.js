@@ -44,7 +44,6 @@ export async function updateOrderStatusApi(id, status, cancellationReason = '') 
       cancellationReason: cancellationReason || '',
     }),
   });
-  });
 
   if (!response.ok) {
     const err = await response.json();
