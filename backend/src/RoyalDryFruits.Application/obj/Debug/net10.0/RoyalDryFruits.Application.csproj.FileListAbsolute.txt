@@ -13,3 +13,4 @@ C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Application\o
 C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Application\obj\Debug\net10.0\refint\RoyalDryFruits.Application.dll
 C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Application\obj\Debug\net10.0\RoyalDryFruits.Application.pdb
 C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Application\obj\Debug\net10.0\ref\RoyalDryFruits.Application.dll
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Application\obj\Debug\net10.0\RoyalDryFruits.Application.sourcelink.json

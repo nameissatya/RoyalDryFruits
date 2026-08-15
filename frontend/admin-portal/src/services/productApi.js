@@ -1,4 +1,4 @@
-import { API_BASE_URL, getAuthHeaders } from './apiConfig';
+import { API_BASE_URL, getAuthHeaders, resolveImageUrl } from './apiConfig';
 
 export async function fetchProductsApi() {
   const response = await fetch(`${API_BASE_URL}/admin/AdminProducts`, {
@@ -43,7 +43,7 @@ export async function uploadProductImageApi(file) {
   }
 
   const data = await response.json();
-  const fullUrl = data.imageUrl.startsWith('http') ? data.imageUrl : `${API_BASE_URL.replace('/api', '')}${data.imageUrl}`;
+  const fullUrl = resolveImageUrl(data.imageUrl);
   return { ...data, fullUrl };
 }
 

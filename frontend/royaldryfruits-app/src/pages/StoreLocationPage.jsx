@@ -1,5 +1,6 @@
-import { Link } from 'react'
-import { ArrowLeft, MapPin, Clock, Phone, Navigation, MessageSquare, Sparkles, ShieldCheck, ShoppingBag } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { ArrowLeft, MapPin, Clock, Phone, Navigation, Sparkles, ShieldCheck, ShoppingBag } from 'lucide-react'
+import WhatsAppIcon from '../components/common/WhatsAppIcon'
 import mapImg from '../assets/images/checkout-map.jpg'
 
 export default function StoreLocationPage() {
@@ -18,13 +19,13 @@ export default function StoreLocationPage() {
       <div className="mb-10 text-center max-w-2xl mx-auto">
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-label text-xs font-bold bg-secondary-container/40 text-secondary mb-3">
           <MapPin className="w-3.5 h-3.5" />
-          Flagship Experience Store
+          Royal Experience Store
         </span>
         <h1 className="font-display text-display-lg-mobile md:text-display-lg text-primary mb-3">
           Visit Our Store
         </h1>
         <p className="font-body text-body-md text-on-surface-variant">
-          Experience the finest California Almonds, Whole Cashews, Medjool Dates, and Luxury Hampers in person at our flagship Hyderabad store.
+          Experience the finest California Almonds, Whole Cashews, Medjool Dates, and Luxury Hampers in person at our Pippara store.
         </p>
       </div>
 
@@ -40,14 +41,13 @@ export default function StoreLocationPage() {
               Store Address
             </h3>
             <p className="font-body text-body-md text-on-surface-variant leading-relaxed">
-              Royal Dry Fruits Flagship Store,<br />
-              Plot No. 42, Hitech City Main Road,<br />
-              Near Kothaguda Signal, Kondapur,<br />
-              Hyderabad, Telangana - 500084
+              Royal Dry Fruits,<br />
+              Pippara,<br />
+              Andhra Pradesh 534197
             </p>
           </div>
           <a
-            href="https://maps.google.com/?q=Kondapur+Hyderabad"
+            href="https://maps.app.goo.gl/H6H4vJbK8ak8qDaW9"
             target="_blank"
             rel="noopener noreferrer"
             className="mt-6 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-primary text-on-primary font-label text-label-md font-bold hover:bg-secondary transition-colors cursor-pointer"
@@ -109,7 +109,7 @@ export default function StoreLocationPage() {
             rel="noopener noreferrer"
             className="mt-6 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 font-label text-label-md font-bold hover:bg-emerald-100 transition-colors cursor-pointer"
           >
-            <MessageSquare className="w-4 h-4 text-emerald-600" />
+            <WhatsAppIcon className="w-4 h-4 text-emerald-600" />
             Chat on WhatsApp
           </a>
         </div>
@@ -121,8 +121,8 @@ export default function StoreLocationPage() {
           <img src={mapImg} alt="Store Map Location" className="w-full h-full object-cover filter contrast-[1.05]" />
           <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/30 to-transparent flex items-end p-8">
             <div className="text-on-primary">
-              <span className="font-label text-xs uppercase tracking-widest font-bold text-secondary-fixed">Hyderabad Hub</span>
-              <h2 className="font-display text-display-md text-white font-bold mb-1">Kondapur Flagship Branch</h2>
+              <span className="font-label text-xs uppercase tracking-widest font-bold text-secondary-fixed">Pippara Hub</span>
+              <h2 className="font-display text-display-md text-white font-bold mb-1">Pippara Royal Branch</h2>
               <p className="font-body text-body-md text-white/90">Equipped with 100% Temperature-Controlled Freshness Vault</p>
             </div>
           </div>

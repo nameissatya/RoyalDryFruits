@@ -8,6 +8,13 @@ export function getAuthHeaders() {
   };
 }
 
+export function resolveImageUrl(url) {
+  if (!url) return '';
+  if (url.startsWith('http') || url.startsWith('data:')) return url;
+  if (!url.startsWith('/')) url = '/' + url;
+  return `${API_BASE_URL.replace('/api', '')}${url}`;
+}
+
 export async function apiClient(endpoint, options = {}) {
   const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
 

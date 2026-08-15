@@ -17,24 +17,51 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  const loginWithPhone = (phone, name = '') => {
-    const cleanPhone = phone.replace(/\D/g, '')
-    const formattedPhone = cleanPhone.length === 10 ? `+91 ${cleanPhone}` : phone
-    const userData = {
-      phone: formattedPhone,
-      rawPhone: cleanPhone,
-      name: name || 'Valued Customer',
-      isLoggedIn: true,
-      loginAt: new Date().toISOString(),
-    }
-    setUser(userData)
+  const sendOtp = async (phone) => {
     try {
-      localStorage.setItem('royaldryfruits_auth_user', JSON.stringify(userData))
-      localStorage.setItem('royaldryfruits_customer_phone', formattedPhone)
-    } catch (e) {
-      console.warn('LocalStorage save error:', e)
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/auth/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone })
+      });
+      if (!response.ok) throw new Error('Failed to send OTP');
+      return await response.json();
+    } catch (err) {
+      console.error('Send OTP failed:', err);
+      throw err;
     }
-    return userData
+  }
+
+  const verifyOtp = async (phone, otp, fullName = '') => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/auth/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, otp, fullName })
+      });
+      if (!response.ok) throw new Error('Failed to verify OTP');
+      
+      const data = await response.json();
+      
+      // We assume data has { token, email, role } based on our backend
+      const userData = {
+        name: fullName || 'Valued Customer',
+        email: data.email,
+        phone: phone,
+        isLoggedIn: true,
+        loginAt: new Date().toISOString(),
+        token: data.token,
+      }
+      
+      setUser(userData)
+      localStorage.setItem('royaldryfruits_auth_user', JSON.stringify(userData))
+      localStorage.setItem('royaldryfruits_customer_phone', phone)
+      
+      return userData
+    } catch (err) {
+      console.error('Verify OTP failed:', err);
+      throw err;
+    }
   }
 
   const logout = () => {
@@ -56,7 +83,8 @@ export function AuthProvider({ children }) {
       value={{
         user,
         isLoggedIn: Boolean(user?.isLoggedIn),
-        loginWithPhone,
+        sendOtp,
+        verifyOtp,
         logout,
         isAuthModalOpen,
         openAuthModal,

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Image as ImageIcon, Minus, Plus, Trash2, ArrowRight, CheckCircle2, Truck, ShoppingCart } from 'lucide-react'
+import WhatsAppIcon from '../components/common/WhatsAppIcon'
 import { useCart } from '../context/CartContext'
 import almondsImg from '../assets/images/cat-almonds.jpg'
 import cashewsImg from '../assets/images/cat-cashews.jpg'
@@ -92,7 +93,25 @@ function CartItem({ item }) {
 }
 
 function OrderSummary() {
-  const { subtotal, deliveryFee, total } = useCart()
+  const { items, subtotal, deliveryFee, total } = useCart()
+
+  const handleWhatsAppOrder = () => {
+    let text = 'Hello Royal Dry Fruits! I would like to place an order:\n\n'
+    items.forEach(item => {
+      text += `• ${item.quantity}x ${item.name} (${item.weight}) - ₹${item.price * item.quantity}\n`
+    })
+    
+    text += `\nSubtotal: ₹${subtotal}`
+    if (deliveryFee === 0) {
+      text += `\nDelivery: Free (Local)`
+    } else {
+      text += `\nDelivery: ₹${deliveryFee}`
+    }
+    text += `\n*Total Amount: ₹${total}*\n\nPlease confirm my order and let me know the payment options.`
+
+    const encodedText = encodeURIComponent(text)
+    window.open(`https://wa.me/919014060329?text=${encodedText}`, '_blank')
+  }
 
   return (
     <div className="bg-surface-container-low rounded-xl p-6 lg:p-8 h-fit sticky top-24">
@@ -134,14 +153,24 @@ function OrderSummary() {
         Inclusive of all taxes
       </p>
 
-      {/* Checkout Button */}
-      <Link
-        to="/checkout"
-        className="w-full py-4 bg-primary text-on-primary font-label text-label-md rounded-full hover:bg-secondary transition-all duration-300 shadow-[0_4px_20px_0_rgba(48,24,0,0.15)] hover:shadow-[0_8px_25px_0_rgba(48,24,0,0.2)] hover:-translate-y-0.5 flex items-center justify-center gap-2 font-bold"
-      >
-        Proceed to Checkout
-        <ArrowRight className="w-5 h-5" />
-      </Link>
+      {/* Checkout Buttons */}
+      <div className="flex flex-col gap-3">
+        <Link
+          to="/checkout"
+          className="w-full py-4 bg-primary text-on-primary font-label text-label-md rounded-full hover:bg-secondary transition-all duration-300 shadow-[0_4px_20px_0_rgba(48,24,0,0.15)] hover:shadow-[0_8px_25px_0_rgba(48,24,0,0.2)] hover:-translate-y-0.5 flex items-center justify-center gap-2 font-bold"
+        >
+          Proceed to Checkout
+          <ArrowRight className="w-5 h-5" />
+        </Link>
+        
+        <button
+          onClick={handleWhatsAppOrder}
+          className="w-full py-4 bg-[#25D366] text-white font-label text-label-md rounded-full hover:brightness-105 transition-all duration-300 shadow-sm hover:-translate-y-0.5 flex items-center justify-center gap-2 font-bold cursor-pointer"
+        >
+          <WhatsAppIcon className="w-5 h-5" />
+          Order on WhatsApp
+        </button>
+      </div>
 
       {/* Trust Badges */}
       <div className="mt-6 pt-6 border-t border-outline-variant/20 space-y-3">

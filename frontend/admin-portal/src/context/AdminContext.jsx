@@ -3,6 +3,7 @@ import { fetchCategoriesApi, createCategoryApi, updateCategoryApi, deleteCategor
 import { fetchProductsApi, createProductApi, updateProductApi, deleteProductApi } from '../services/productApi';
 import { fetchOrdersApi, updateOrderStatusApi } from '../services/orderApi';
 import { fetchSettingsApi, updateSettingsApi } from '../services/settingsApi';
+import { resolveImageUrl } from '../services/apiConfig';
 
 const AdminContext = createContext();
 
@@ -41,15 +42,25 @@ export function AdminProvider({ children }) {
     try {
       const data = await fetchCategoriesApi();
       if (Array.isArray(data)) {
-        setCategories(data.map(c => ({
-          id: c.id,
-          name: c.name,
-          description: c.description || '',
-          icon: c.icon || 'folder',
-          count: c.productCount || 0,
-          isActive: c.isActive !== false,
-          createdAt: c.createdAt,
-        })));
+        setCategories(data.map(c => {
+          const iconMap = {
+            'gift': 'redeem',
+            'sun': 'light_mode',
+            'sparkles': 'auto_awesome',
+            'nut': 'spa'
+          };
+          const iconName = iconMap[c.icon?.toLowerCase()] || c.icon || 'folder';
+          
+          return {
+            id: c.id,
+            name: c.name,
+            description: c.description || '',
+            icon: iconName,
+            count: c.productCount || 0,
+            isActive: c.isActive !== false,
+            createdAt: c.createdAt,
+          };
+        }));
       }
     } catch (err) {
       console.warn('API connection offline for categories, using local data fallback.', err);
@@ -75,7 +86,7 @@ export function AdminProvider({ children }) {
             price: firstVariant.price || 0,
             stock: firstVariant.stockQuantity || 0,
             status: p.isActive ? 'Active' : 'Out of Stock',
-            img: p.imageUrl || 'https://images.unsplash.com/photo-1508061252222-1d5f3083e589?w=150&auto=format&fit=crop&q=60',
+            img: p.imageUrl ? resolveImageUrl(p.imageUrl) : 'https://images.unsplash.com/photo-1508061252222-1d5f3083e589?w=150&auto=format&fit=crop&q=60',
             origin: p.origin || 'India',
             isFeatured: p.isFeatured,
             variants: p.variants || [],

@@ -13,6 +13,7 @@ import {
 } from '../services/productApi';
 import { fetchOrdersApi, updateOrderStatusApi } from '../services/orderApi';
 import { fetchSettingsApi, updateSettingsApi } from '../services/settingsApi';
+import { resolveImageUrl } from '../services/apiConfig';
 
 // --- CATEGORIES HOOKS ---
 export function useCategoriesQuery() {
@@ -21,15 +22,25 @@ export function useCategoriesQuery() {
     queryFn: async () => {
       const data = await fetchCategoriesApi();
       if (!Array.isArray(data)) return [];
-      return data.map((c) => ({
-        id: c.id,
-        name: c.name,
-        description: c.description || '',
-        icon: c.icon || 'folder',
-        count: c.productCount || 0,
-        isActive: c.isActive !== false,
-        createdAt: c.createdAt,
-      }));
+      return data.map((c) => {
+        const iconMap = {
+          'gift': 'redeem',
+          'sun': 'light_mode',
+          'sparkles': 'auto_awesome',
+          'nut': 'spa'
+        };
+        const iconName = iconMap[c.icon?.toLowerCase()] || c.icon || 'folder';
+        
+        return {
+          id: c.id,
+          name: c.name,
+          description: c.description || '',
+          icon: iconName,
+          count: c.productCount || 0,
+          isActive: c.isActive !== false,
+          createdAt: c.createdAt,
+        };
+      });
     },
   });
 }
@@ -82,7 +93,7 @@ export function useProductsQuery() {
           price: firstVariant.price || 0,
           stock: firstVariant.stockQuantity || 0,
           status: p.isActive ? 'Active' : 'Out of Stock',
-          img: p.imageUrl || 'https://images.unsplash.com/photo-1508061252222-1d5f3083e589?w=150&auto=format&fit=crop&q=60',
+          img: p.imageUrl ? resolveImageUrl(p.imageUrl) : 'https://images.unsplash.com/photo-1508061252222-1d5f3083e589?w=150&auto=format&fit=crop&q=60',
           origin: p.origin || 'India',
           isFeatured: p.isFeatured,
           variants: p.variants || [],

@@ -141,4 +141,10 @@ C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.API\obj\Debug
 C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.API\obj\Debug\net10.0\RoyalDryFruits.API.genruntimeconfig.cache
 C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.API\obj\Debug\net10.0\ref\RoyalDryFruits.API.dll
 C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.API\bin\Debug\net10.0\RoyalDryFruits.API.staticwebassets.runtime.json
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.API\obj\Debug\net10.0\RoyalDryFruits.API.sourcelink.json
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.API\bin\Debug\net10.0\Google.Apis.dll
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.API\bin\Debug\net10.0\Google.Apis.Auth.dll
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.API\bin\Debug\net10.0\Google.Apis.Core.dll
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.API\bin\Debug\net10.0\System.Management.dll
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.API\bin\Debug\net10.0\runtimes\win\lib\net7.0\System.Management.dll
 C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.API\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt

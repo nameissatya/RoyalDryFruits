@@ -28,4 +28,18 @@ public class AuthController : ControllerBase
         var result = await _authService.LoginUserAsync(request);
         return Ok(result);
     }
+
+    [HttpPost("send-otp")]
+    public async Task<IActionResult> SendOtp(SendOtpRequest request)
+    {
+        var result = await _authService.SendOtpAsync(request);
+        return Ok(result);
+    }
+
+    [HttpPost("verify-otp")]
+    public async Task<IActionResult> VerifyOtp(VerifyOtpRequest request)
+    {
+        var result = await _authService.VerifyOtpAsync(request);
+        return Ok(result);
+    }
 }

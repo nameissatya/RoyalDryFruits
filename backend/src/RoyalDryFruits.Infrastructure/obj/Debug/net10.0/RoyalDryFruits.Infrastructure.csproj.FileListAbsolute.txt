@@ -15,3 +15,4 @@ C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Infrastructur
 C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Infrastructure\obj\Debug\net10.0\refint\RoyalDryFruits.Infrastructure.dll
 C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Infrastructure\obj\Debug\net10.0\RoyalDryFruits.Infrastructure.pdb
 C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Infrastructure\obj\Debug\net10.0\ref\RoyalDryFruits.Infrastructure.dll
+C:\Users\Satya\Self Projects\KiranaFlow\backend\src\RoyalDryFruits.Infrastructure\obj\Debug\net10.0\RoyalDryFruits.Infrastructure.sourcelink.json

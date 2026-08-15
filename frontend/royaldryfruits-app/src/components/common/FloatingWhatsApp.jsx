@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { MessageCircle, X } from 'lucide-react'
+import { X } from 'lucide-react'
+import WhatsAppIcon from './WhatsAppIcon'
 
 export default function FloatingWhatsApp() {
   const [isOpen, setIsOpen] = useState(false)
@@ -34,9 +35,9 @@ export default function FloatingWhatsApp() {
           </p>
           <button
             onClick={handleOpenWhatsApp}
-            className="w-full bg-[#25D366] text-white font-label text-label-md py-2.5 rounded-full flex items-center justify-center gap-2 font-bold hover:brightness-105 transition-all shadow-sm"
+            className="w-full bg-[#25D366] text-white font-label text-label-md py-2.5 rounded-full flex items-center justify-center gap-2 font-bold hover:brightness-105 transition-all shadow-sm cursor-pointer"
           >
-            <MessageCircle className="w-5 h-5" />
+            <WhatsAppIcon className="w-5 h-5" />
             Start WhatsApp Chat
           </button>
         </div>
@@ -46,9 +47,9 @@ export default function FloatingWhatsApp() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Order on WhatsApp"
-        className="w-14 h-14 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all group relative"
+        className="w-14 h-14 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all group relative cursor-pointer"
       >
-        <MessageCircle className="w-7 h-7" />
+        <WhatsAppIcon className="w-7 h-7" />
         <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-on-primary text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-surface">
           1
         </span>

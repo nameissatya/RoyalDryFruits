@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using RoyalDryFruits.Application.Features.Authentication.DTOs;
 using RoyalDryFruits.Application.Interfaces;
 using RoyalDryFruits.Domain.Entities;
 using RoyalDryFruits.Infrastructure.Persistence;
+using System.Text.Json;
 
 namespace RoyalDryFruits.Infrastructure.Services;
 
@@ -10,13 +12,19 @@ public class AuthService : IAuthService
 {
     private readonly ApplicationDbContext _db;
     private readonly JwtService _jwtService;
+    private readonly IConfiguration _config;
+    private readonly HttpClient _httpClient;
 
     public AuthService(
         ApplicationDbContext db,
-        JwtService jwtService)
+        JwtService jwtService,
+        IConfiguration config,
+        HttpClient httpClient)
     {
         _db = db;
         _jwtService = jwtService;
+        _config = config;
+        _httpClient = httpClient;
     }
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
@@ -124,6 +132,54 @@ public class AuthService : IAuthService
             Token = _jwtService.GenerateAdminToken(admin),
             Email = admin.Email,
             Role = admin.Role
+        };
+    }
+
+    public async Task<AuthResponse> SendOtpAsync(SendOtpRequest request)
+    {
+        // Mock OTP sending
+        // In a real scenario, this would send an SMS via MSG91
+        
+        return new AuthResponse { Email = request.Phone, Token = "OTP_SENT", Role = "Customer" };
+    }
+
+    public async Task<AuthResponse> VerifyOtpAsync(VerifyOtpRequest request)
+    {
+        // Mock OTP verification (accepts only 1234)
+        if (request.Otp != "1234")
+        {
+            throw new Exception("Invalid OTP. Please use 1234 for testing.");
+        }
+
+        // Find or create user
+        var rawPhone = request.Phone.Replace(" ", "");
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Phone == rawPhone);
+        
+        if (user == null)
+        {
+            user = new User
+            {
+                FirstName = request.FullName ?? "Valued",
+                LastName = "Customer",
+                Email = $"{rawPhone}@royaldryfruits.com", // Dummy email as required by schema
+                Phone = rawPhone,
+                IsPhoneVerified = true
+            };
+            
+            _db.Users.Add(user);
+            await _db.SaveChangesAsync();
+        }
+        else if (!user.IsPhoneVerified)
+        {
+            user.IsPhoneVerified = true;
+            await _db.SaveChangesAsync();
+        }
+
+        return new AuthResponse
+        {
+            Token = _jwtService.GenerateToken(user),
+            Email = user.Email,
+            Role = "Customer"
         };
     }
 }

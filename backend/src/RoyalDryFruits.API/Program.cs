@@ -13,9 +13,11 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
     ContentRootPath = AppContext.BaseDirectory
 });
 
-// Bind dynamically to PORT env variable assigned by Render container
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-builder.WebHost.UseUrls($"http://*:{port}");
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port))
+{
+    builder.WebHost.UseUrls($"http://*:{port}");
+}
 
 // Add CORS Policy for Frontend Portals (Admin & Storefront)
 builder.Services.AddCors(options =>
@@ -30,6 +32,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddControllers();
+builder.Services.AddHttpClient();
 builder.Services.AddInfrastructureServices();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(

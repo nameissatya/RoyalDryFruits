@@ -1,10 +1,11 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Home, LayoutGrid, ShoppingBag, User } from 'lucide-react'
+import { Home, LayoutGrid, ShoppingBag, User, MapPin } from 'lucide-react'
 
 const navItems = [
   { label: 'Home', icon: Home, href: '/' },
   { label: 'Collections', icon: LayoutGrid, href: '/collections' },
   { label: 'Cart', icon: ShoppingBag, href: '/cart', badge: true },
+  { label: 'Store Location', icon: MapPin, href: '/store-location' },
   { label: 'Orders', icon: User, href: '/my-orders' },
 ]
 

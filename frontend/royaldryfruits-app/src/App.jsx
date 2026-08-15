@@ -16,7 +16,7 @@ import DeliveryPolicyPage from './pages/DeliveryPolicyPage'
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import TermsOfServicePage from './pages/TermsOfServicePage'
 import { AuthProvider } from './context/AuthContext'
-import PhoneLoginModal from './components/auth/PhoneLoginModal'
+import AuthModal from './components/auth/AuthModal'
 import FloatingWhatsApp from './components/common/FloatingWhatsApp'
 import ScrollToTop from './components/common/ScrollToTop'
 
@@ -58,7 +58,7 @@ function App() {
         <Footer />
         <MobileNav />
         <FloatingWhatsApp />
-        <PhoneLoginModal />
+        <AuthModal />
       </div>
     </AuthProvider>
   )

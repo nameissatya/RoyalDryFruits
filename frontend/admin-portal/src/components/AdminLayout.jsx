@@ -38,7 +38,7 @@ export default function AdminLayout({ children }) {
           </div>
           <div>
             <h1 className="font-bold text-lg text-primary tracking-tight">{settings.storeName || 'Royal Dry Fruits'}</h1>
-            <p className="text-xs text-surface-variant opacity-80 font-medium">SaaS Admin Portal</p>
+            <p className="text-xs text-surface-variant opacity-80 font-medium">Admin Portal</p>
           </div>
         </div>
 
@@ -50,11 +50,10 @@ export default function AdminLayout({ children }) {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
-                  isActive
+                className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${isActive
                     ? 'border-l-4 border-primary bg-on-secondary-fixed-variant text-primary font-semibold'
                     : 'border-l-4 border-transparent text-surface-variant opacity-80 hover:bg-on-secondary-fixed-variant hover:text-white'
-                }`}
+                  }`}
               >
                 <span className="material-symbols-outlined text-xl">{item.icon}</span>
                 <span>{item.label}</span>
@@ -117,9 +116,8 @@ export default function AdminLayout({ children }) {
                   key={item.path}
                   to={item.path}
                   onClick={() => setMobileOpen(false)}
-                  className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-sm ${
-                    isActive ? 'bg-on-secondary-fixed-variant text-primary font-bold' : 'text-surface-variant'
-                  }`}
+                  className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-sm ${isActive ? 'bg-on-secondary-fixed-variant text-primary font-bold' : 'text-surface-variant'
+                    }`}
                 >
                   <span className="material-symbols-outlined">{item.icon}</span>
                   <span>{item.label}</span>

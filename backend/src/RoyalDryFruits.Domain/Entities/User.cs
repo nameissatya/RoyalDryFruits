@@ -10,9 +10,15 @@ public class User
 
     public string Email { get; set; } = string.Empty;
 
-    public string Phone { get; set; } = string.Empty;
+    public string? Phone { get; set; }
 
-    public string PasswordHash { get; set; } = string.Empty;
+    public bool IsPhoneVerified { get; set; } = false;
+
+    public string? GoogleId { get; set; }
+
+    public string? ProfilePictureUrl { get; set; }
+
+    public string? PasswordHash { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

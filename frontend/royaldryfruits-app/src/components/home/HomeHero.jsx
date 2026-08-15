@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
-import { MessageCircle, Banknote, MapPin, CheckCircle2, ShieldCheck } from 'lucide-react'
+import { Banknote, MapPin, CheckCircle2, ShieldCheck } from 'lucide-react'
+import WhatsAppIcon from '../common/WhatsAppIcon'
 import heroImg from '../../assets/images/home-hero.jpg'
 
 const trustBadges = [
@@ -51,9 +52,9 @@ export default function HomeHero() {
           <button
             type="button"
             onClick={handleWhatsAppOrder}
-            className="px-8 py-4 bg-[#25D366] text-white font-label text-label-md rounded-full shadow-md hover:brightness-105 transition-all duration-300 w-full sm:w-auto font-bold flex items-center justify-center gap-2"
+            className="px-8 py-4 bg-[#25D366] text-white font-label text-label-md rounded-full shadow-md hover:brightness-105 transition-all duration-300 w-full sm:w-auto font-bold flex items-center justify-center gap-2 cursor-pointer"
           >
-            <MessageCircle className="w-5 h-5" />
+            <WhatsAppIcon className="w-5 h-5" />
             Order on WhatsApp
           </button>
         </div>
