@@ -1,7 +1,6 @@
 databases:
   - name: royaldryfruits-db
     databaseName: royaldryfruits
-    user: postgres
     plan: free
 
 services:
@@ -19,8 +18,7 @@ services:
   - type: web
     name: royaldryfruits-storefront
     env: static
-    region: oregon
-    plan: free
+
     buildCommand: cd frontend/royaldryfruits-app && npm install && npm run build
     staticPublishPath: frontend/royaldryfruits-app/dist
     envVars:
@@ -30,8 +28,7 @@ services:
   - type: web
     name: royaldryfruits-admin
     env: static
-    region: oregon
-    plan: free
+
     buildCommand: cd frontend/admin-portal && npm install && npm run build
     staticPublishPath: frontend/admin-portal/dist
     envVars:
