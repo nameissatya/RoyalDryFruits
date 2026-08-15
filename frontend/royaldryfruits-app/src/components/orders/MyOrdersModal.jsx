@@ -219,7 +219,7 @@ export default function MyOrdersModal({ isOpen, onClose }) {
                     </div>
 
                     <a
-                      href={`https://wa.me/919876543210?text=${encodeURIComponent(`Hi Royal Dry Fruits, I need assistance with my Order ${ord.orderNumber || ord.id}`)}`}
+                      href={`https://wa.me/919014060329?text=${encodeURIComponent(`Hi Royal Dry Fruits, I need assistance with my Order ${ord.orderNumber || ord.id}`)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 font-label font-bold text-[11px] flex items-center gap-1 transition-colors"

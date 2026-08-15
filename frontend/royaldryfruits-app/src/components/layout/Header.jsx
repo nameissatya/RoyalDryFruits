@@ -44,9 +44,9 @@ export default function Header() {
 
   const filteredResults = searchQuery.trim()
     ? SEARCH_ITEMS.filter(item =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.category.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.category.toLowerCase().includes(searchQuery.toLowerCase())
+    )
     : SEARCH_ITEMS
 
   const handleSelectProduct = (product) => {
@@ -75,11 +75,10 @@ export default function Header() {
               <Link
                 key={link.label}
                 to={link.href}
-                className={`font-label text-label-md transition-colors duration-200 ${
-                  isActive(link.href)
+                className={`font-label text-label-md transition-colors duration-200 ${isActive(link.href)
                     ? 'text-secondary font-bold border-b-2 border-secondary pb-1'
                     : 'text-on-surface-variant font-semibold hover:text-secondary'
-                }`}
+                  }`}
               >
                 {link.label}
               </Link>
@@ -180,7 +179,7 @@ export default function Header() {
                       )}
 
                       <a
-                        href="https://wa.me/919876543210?text=Hi%20Royal%20Dry%20Fruits,%20I%20have%20a%20question"
+                        href="https://wa.me/919014060329?text=Hi%20Royal%20Dry%20Fruits,%20I%20have%20a%20question"
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => setIsProfileOpen(false)}

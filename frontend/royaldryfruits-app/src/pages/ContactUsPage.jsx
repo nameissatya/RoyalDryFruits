@@ -71,7 +71,7 @@ export default function ContactUsPage() {
                 <h4 className="font-body text-body-md font-bold text-primary">WhatsApp Support</h4>
                 <p className="font-body text-body-xs text-on-surface-variant mt-0.5">Instant resolution & order tracking assistance</p>
                 <a
-                  href="https://wa.me/919876543210?text=Hi%20Royal%20Dry%20Fruits,%20I%20have%20an%20inquiry"
+                  href="https://wa.me/919014060329?text=Hi%20Royal%20Dry%20Fruits,%20I%20have%20an%20inquiry"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-block mt-2 font-label text-xs font-bold text-emerald-700 hover:underline"

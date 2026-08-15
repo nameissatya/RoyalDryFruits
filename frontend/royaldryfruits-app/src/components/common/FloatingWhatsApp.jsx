@@ -5,7 +5,7 @@ import WhatsAppIcon from './WhatsAppIcon'
 export default function FloatingWhatsApp() {
   const [isOpen, setIsOpen] = useState(false)
 
-  const whatsappNumber = '919876543210' // Demo Store WhatsApp Number
+  const whatsappNumber = '919014060329' // Demo Store WhatsApp Number
   const defaultMessage = encodeURIComponent(
     'Hi Royal Dry Fruits! I would like to place an order or inquire about dry fruit hampers.'
   )

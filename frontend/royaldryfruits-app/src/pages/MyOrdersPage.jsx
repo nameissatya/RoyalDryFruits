@@ -193,11 +193,10 @@ export default function MyOrdersPage() {
           <button
             key={tab}
             onClick={() => setStatusFilter(tab)}
-            className={`px-4 py-2 rounded-full font-label text-xs font-bold capitalize transition-all cursor-pointer ${
-              statusFilter === tab
+            className={`px-4 py-2 rounded-full font-label text-xs font-bold capitalize transition-all cursor-pointer ${statusFilter === tab
                 ? 'bg-secondary text-on-secondary shadow-sm'
                 : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
-            }`}
+              }`}
           >
             {tab === 'all' ? 'All Orders' : tab}
           </button>
@@ -323,7 +322,7 @@ export default function MyOrdersPage() {
                 </div>
 
                 <a
-                  href={`https://wa.me/919876543210?text=${encodeURIComponent(`Hi Royal Dry Fruits, I need support for my Order ${ord.orderNumber || ord.id}`)}`}
+                  href={`https://wa.me/919014060329?text=${encodeURIComponent(`Hi Royal Dry Fruits, I need support for my Order ${ord.orderNumber || ord.id}`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-4 py-2 rounded-xl bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 font-label font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
