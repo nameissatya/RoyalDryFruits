@@ -21,6 +21,10 @@ services:
 
     buildCommand: cd frontend/royaldryfruits-app && npm install --include=dev && npm run build
     staticPublishPath: frontend/royaldryfruits-app/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
       - key: VITE_API_URL
         value: https://royaldryfruits-api.onrender.com/api
@@ -31,6 +35,10 @@ services:
 
     buildCommand: cd frontend/admin-portal && npm install --include=dev && npm run build
     staticPublishPath: frontend/admin-portal/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
       - key: VITE_API_URL
         value: https://royaldryfruits-api.onrender.com/api
