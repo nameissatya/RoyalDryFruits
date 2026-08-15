@@ -116,6 +116,12 @@ app.MapGet("/", () => Results.Ok(new {
 
 app.MapGet("/api", () => Results.Ok(new { status = "Online", service = "Royal Dry Fruits API" }));
 
+// Health check endpoint - pinged every 14 mins to keep Render free tier alive
+app.MapGet("/health", () => Results.Ok(new { 
+    status = "healthy", 
+    timestamp = DateTime.UtcNow 
+}));
+
 app.MapControllers();
 
 app.Run();
