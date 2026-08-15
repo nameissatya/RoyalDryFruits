@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAdmin } from '../context/AdminContext';
 import { logoutAdmin, getAdminUser } from '../services/authApi';
@@ -10,6 +10,18 @@ export default function AdminLayout({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { toastMessage, settings } = useAdmin();
   const adminUser = getAdminUser();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
+  const toggleMobileOpen = () => {
+    const nextState = !mobileOpen;
+    setMobileOpen(nextState);
+    if (nextState) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   const navItems = [
     { label: 'Dashboard', path: '/', icon: 'dashboard' },
@@ -77,7 +89,7 @@ export default function AdminLayout({ children }) {
         <header className="h-16 sticky top-0 bg-surface border-b border-outline-variant shadow-sm flex items-center justify-between px-4 lg:px-lg z-10">
           <div className="flex items-center space-x-3">
             <button
-              onClick={() => setMobileOpen(!mobileOpen)}
+              onClick={toggleMobileOpen}
               className="lg:hidden text-on-surface-variant p-2 rounded-lg hover:bg-surface-container-high"
             >
               <span className="material-symbols-outlined">menu</span>

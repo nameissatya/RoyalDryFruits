@@ -104,7 +104,7 @@ export default function StoreLocationPage() {
           </div>
 
           <a
-            href="https://wa.me/919876543210?text=Hi%20Royal%20Dry%20Fruits,%20I%20want%20to%20visit%20your%20store"
+            href="https://wa.me/919014060329?text=Hi%20Royal%20Dry%20Fruits,%20I%20want%20to%20visit%20your%20store"
             target="_blank"
             rel="noopener noreferrer"
             className="mt-6 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 font-label text-label-md font-bold hover:bg-emerald-100 transition-colors cursor-pointer"
