@@ -96,7 +96,7 @@ export default function StoreLocationPage() {
               Call us directly or chat on WhatsApp for bulk order inquiries, corporate gifts, and custom hampers.
             </p>
             <p className="font-headline text-headline-sm text-secondary font-bold mb-1">
-              +91 98765 43210
+              +91 9014060329
             </p>
             <p className="font-body text-body-xs text-on-surface-variant">
               Email: contact@royaldryfruits.com
