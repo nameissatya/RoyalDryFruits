@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAdmin } from '../context/AdminContext';
 import { uploadProductImageApi } from '../services/productApi';
@@ -27,6 +27,12 @@ export default function AddProductPage() {
     price1kg: '',
     stock: '',
   });
+
+  useEffect(() => {
+    if (!formData.categoryId && categories.length > 0) {
+      setFormData(prev => ({ ...prev, categoryId: categories[0].id }));
+    }
+  }, [categories]);
 
   const handleCategoryChange = (e) => {
     setFormData({ ...formData, categoryId: e.target.value });

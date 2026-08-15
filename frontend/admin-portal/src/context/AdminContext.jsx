@@ -18,8 +18,15 @@ const defaultSettings = {
   freeDeliveryThreshold: 1500,
 };
 
+const defaultCategories = [
+  { id: 'cat-1', name: 'Nuts & Almonds', description: 'Premium fresh nuts and almond varieties', icon: 'spa', count: 0, isActive: true },
+  { id: 'cat-2', name: 'Cashews & Pistachios', description: 'Whole cashews and crisp Afghan pistachios', icon: 'auto_awesome', count: 0, isActive: true },
+  { id: 'cat-3', name: 'Dried Fruits & Dates', description: 'Fresh Medjool dates, raisins, figs and berries', icon: 'light_mode', count: 0, isActive: true },
+  { id: 'cat-4', name: 'Gift Hampers', description: 'Luxury festive and corporate gift hampers', icon: 'redeem', count: 0, isActive: true },
+];
+
 export function AdminProvider({ children }) {
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState(defaultCategories);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [customers, setCustomers] = useState([]);
@@ -41,7 +48,7 @@ export function AdminProvider({ children }) {
     setIsCategoriesLoading(true);
     try {
       const data = await fetchCategoriesApi();
-      if (Array.isArray(data)) {
+      if (Array.isArray(data) && data.length > 0) {
         setCategories(data.map(c => {
           const iconMap = {
             'gift': 'redeem',
@@ -61,9 +68,12 @@ export function AdminProvider({ children }) {
             createdAt: c.createdAt,
           };
         }));
+      } else {
+        setCategories(defaultCategories);
       }
     } catch (err) {
       console.warn('API connection offline for categories, using local data fallback.', err);
+      setCategories(defaultCategories);
     } finally {
       setIsCategoriesLoading(false);
     }
