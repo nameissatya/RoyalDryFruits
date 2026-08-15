@@ -7,7 +7,7 @@ services:
   - type: web
     name: royaldryfruits-api
     env: docker
-    region: oregon
+    region: singapore
     plan: free
     envVars:
       - key: ConnectionStrings__DefaultConnection
