@@ -83,7 +83,19 @@ try
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        db.Database.EnsureCreated();
+        
+        // Apply migrations if available, otherwise recreate schema
+        try
+        {
+            db.Database.Migrate();
+        }
+        catch
+        {
+            // If migrations fail (e.g., fresh Render DB), recreate from scratch
+            db.Database.EnsureDeleted();
+            db.Database.EnsureCreated();
+        }
+        
         await DbInitializer.SeedAsync(db);
     }
 }
