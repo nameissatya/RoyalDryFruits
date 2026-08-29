@@ -1,18 +1,36 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Package, MapPin, Calendar, MessageSquare, CheckCircle, Clock, Truck, XCircle, ShieldCheck, Lock } from 'lucide-react'
+import { ArrowLeft, Package, MapPin, Calendar, MessageSquare, CheckCircle, Clock, Truck, XCircle, ShieldCheck, Lock, RotateCcw } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { useCart } from '../context/CartContext'
 import { fetchOrdersByPhoneApi, fetchAllOrdersApi } from '../services/orderApi'
 import { resolveImageUrl } from '../services/productApi'
+import { getWhatsAppLink } from '../config/storeConfig'
 
 export default function MyOrdersPage() {
   const { user, isLoggedIn, openAuthModal } = useAuth()
+  const { addItem } = useCart()
   const [orders, setOrders] = useState([])
   const [phone, setPhone] = useState('')
   const [isSearching, setIsSearching] = useState(false)
   const [statusFilter, setStatusFilter] = useState('all')
 
   const navigate = useNavigate()
+
+  const handleRepeatOrder = (order) => {
+    if (!order || !order.items || order.items.length === 0) return
+    order.items.forEach((item) => {
+      addItem({
+        id: item.productId || item.id || `reorder-${item.productName || 'item'}`,
+        name: item.productName || item.name || 'Royal Dry Fruits Product',
+        weight: item.weightLabel || item.weight || '500g',
+        price: Number(item.unitPrice || item.price || (item.totalPrice / (item.quantity || 1))) || 0,
+        quantity: Number(item.quantity) || 1,
+        image: item.image || null,
+      })
+    })
+    navigate('/cart')
+  }
 
   const loadOrders = async () => {
     if (!isLoggedIn) {
@@ -261,11 +279,22 @@ export default function MyOrdersPage() {
                   </div>
                 </div>
 
-                <div className="text-right">
-                  <p className="font-label text-body-xs text-on-surface-variant">Total Amount</p>
-                  <p className="font-headline text-headline-sm text-secondary font-bold">
-                    {formatPrice(ord.totalAmount)}
-                  </p>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="font-label text-body-xs text-on-surface-variant">Total Amount</p>
+                    <p className="font-headline text-headline-sm text-secondary font-bold">
+                      {formatPrice(ord.totalAmount)}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => handleRepeatOrder(ord)}
+                    className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-primary text-on-primary hover:bg-secondary font-label font-bold text-xs shadow-sm transition-all cursor-pointer hover:scale-105 active:scale-95"
+                    title="Add all items from this order to cart and checkout"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    Repeat Order
+                  </button>
                 </div>
               </div>
 
@@ -362,15 +391,25 @@ export default function MyOrdersPage() {
                   </span>
                 </div>
 
-                <a
-                  href={`https://wa.me/919014060329?text=${encodeURIComponent(`Hi Royal Dry Fruits, I need support for my Order ${ord.orderNumber || ord.id}`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 rounded-xl bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 font-label font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <MessageSquare className="w-4 h-4 text-emerald-600" />
-                  Need Help? WhatsApp Us
-                </a>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => handleRepeatOrder(ord)}
+                    className="px-4 py-2 rounded-xl bg-primary text-on-primary hover:bg-secondary font-label font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm cursor-pointer hover:scale-105 active:scale-95"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    Repeat Order
+                  </button>
+
+                  <a
+                    href={getWhatsAppLink(`Hi Royal Dry Fruits, I need support for my Order ${ord.orderNumber || ord.id}`)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 rounded-xl bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 font-label font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <MessageSquare className="w-4 h-4 text-emerald-600" />
+                    Need Help? WhatsApp Us
+                  </a>
+                </div>
               </div>
             </div>
           ))}

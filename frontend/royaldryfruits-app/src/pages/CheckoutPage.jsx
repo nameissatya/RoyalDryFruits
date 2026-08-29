@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { User, MapPin, Info, LocateFixed, CreditCard, Receipt, ArrowRight, Lock, Loader2, CheckCircle2, AlertCircle, Phone, Smartphone, ChevronDown } from 'lucide-react'
+import { User, MapPin, Info, LocateFixed, Receipt, ArrowRight, Lock, Loader2, CheckCircle2, AlertCircle, AlertTriangle } from 'lucide-react'
+import WhatsAppIcon from '../components/common/WhatsAppIcon'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { createOrderApi } from '../services/orderApi'
 import mapImg from '../assets/images/checkout-map.jpg'
 import almondsImg from '../assets/images/cat-almonds.jpg'
 import cashewsImg from '../assets/images/cat-cashews.jpg'
+
+import { getWhatsAppLink, STORE_WHATSAPP } from '../config/storeConfig'
 
 const productImages = {
   'almond-california-500': almondsImg,
@@ -22,28 +25,70 @@ function formatPrice(amount) {
   }).format(amount)
 }
 
-export default function CheckoutPage() {
-  const { items, subtotal, deliveryFee, total, clearCart } = useCart()
-  const { user, isLoggedIn, sendOtp, verifyOtp } = useAuth()
-  const navigate = useNavigate()
+function calculateDistanceKm(lat1, lon1, lat2, lon2) {
+  if (!lat1 || !lon1 || !lat2 || !lon2) return null
+  const R = 6371 // Earth radius in KM
+  const dLat = (lat2 - lat1) * (Math.PI / 180)
+  const dLon = (lon2 - lon1) * (Math.PI / 180)
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) *
+    Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return Math.round(R * c * 10) / 10 // Rounded to 1 decimal place
+}
 
-  // Checkout Steps: 1: Phone, 2: OTP, 3: Address, 4: Payment
-  const [currentStep, setCurrentStep] = useState(1)
+export default function CheckoutPage() {
+  const {
+    items,
+    subtotal,
+    deliveryFee: defaultDeliveryFee,
+    clearCart,
+    storeSettings,
+    freeDeliveryThreshold,
+    baseDeliveryCharge,
+    minOrderValue,
+    amountNeededForFreeDelivery,
+  } = useCart()
+  const { user, isLoggedIn } = useAuth()
+  const navigate = useNavigate()
 
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
-    otp: '',
     address: '',
     paymentMethod: 'cod',
   })
 
+  const [customerCoords, setCustomerCoords] = useState(null)
+  const [calculatedDistance, setCalculatedDistance] = useState(null)
   const [isDetecting, setIsDetecting] = useState(false)
   const [locationStatus, setLocationStatus] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
 
-  // Auto-fill logged in user info and skip to address step
+  // Configured store radius & coordinates from database
+  const freeRadius = Number(storeSettings?.freeDeliveryRadius) || 10
+  const maxServiceRadius = Number(storeSettings?.deliveryRadius) || 25
+  const storeLat = Number(storeSettings?.latitude)
+  const storeLng = Number(storeSettings?.longitude)
+
+  // 2-Tier Distance evaluation
+  const isFreeDistanceZone = calculatedDistance !== null && calculatedDistance <= freeRadius
+  const isStandardDistanceZone = calculatedDistance !== null && calculatedDistance > freeRadius && calculatedDistance <= maxServiceRadius
+  const isOutsideServiceZone = calculatedDistance !== null && calculatedDistance > maxServiceRadius
+  const isSubtotalEligible = freeDeliveryThreshold > 0 && subtotal >= freeDeliveryThreshold
+
+  // Delivery fee is 0 if within free radius OR if subtotal meets free delivery threshold
+  const effectiveDeliveryFee = (isFreeDistanceZone || isSubtotalEligible || items.length === 0)
+    ? 0
+    : (customerCoords ? baseDeliveryCharge : defaultDeliveryFee)
+
+  const effectiveTotal = subtotal + effectiveDeliveryFee
+
+  // Auto-fill logged in user info
   useEffect(() => {
     if (isLoggedIn && user) {
       setFormData(prev => ({
@@ -51,67 +96,12 @@ export default function CheckoutPage() {
         fullName: prev.fullName || user.name || '',
         phone: prev.phone || user.phone || user.rawPhone || prev.phone,
       }))
-      if (currentStep < 3) {
-        setCurrentStep(3)
-      }
     }
-  }, [isLoggedIn, user, currentStep])
+  }, [isLoggedIn, user])
 
   const handleChange = (e) => {
     const { id, value } = e.target
     setFormData((prev) => ({ ...prev, [id]: value }))
-  }
-
-  const handleSendOtp = async (e) => {
-    e.preventDefault()
-    setSubmitError('')
-    
-    const cleanPhone = formData.phone.replace(/\D/g, '')
-    if (!/^([6-9]\d{9})$/.test(cleanPhone)) {
-      setSubmitError('Please enter a valid 10-digit Indian phone number.')
-      return
-    }
-
-    setIsSubmitting(true)
-    try {
-      await sendOtp(cleanPhone)
-      setCurrentStep(2)
-    } catch (err) {
-      setSubmitError('Failed to send OTP. Please try again.')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault()
-    setSubmitError('')
-    
-    if (formData.otp.length !== 4) {
-      setSubmitError('Please enter a 4-digit OTP.')
-      return
-    }
-
-    setIsSubmitting(true)
-    const cleanPhone = formData.phone.replace(/\D/g, '')
-    try {
-      await verifyOtp(cleanPhone, formData.otp)
-      setCurrentStep(3)
-    } catch (err) {
-      setSubmitError('Incorrect OTP. Please try again.')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const handleAddressContinue = (e) => {
-    e.preventDefault()
-    setSubmitError('')
-    if (!formData.fullName || !formData.address) {
-      setSubmitError('Please enter your full name and delivery address.')
-      return
-    }
-    setCurrentStep(4)
   }
 
   const handleDetectLocation = () => {
@@ -126,22 +116,38 @@ export default function CheckoutPage() {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords
+        setCustomerCoords({ lat: latitude, lng: longitude })
+
+        // Compute distance from shop coordinates
+        let distanceText = ''
+        if (storeLat && storeLng) {
+          const dist = calculateDistanceKm(storeLat, storeLng, latitude, longitude)
+          setCalculatedDistance(dist)
+          if (dist <= freeRadius) {
+            distanceText = ` (${dist} km away • Within ${freeRadius}km Free Delivery zone! 🎉)`
+          } else if (dist <= maxServiceRadius) {
+            distanceText = ` (${dist} km away • Standard delivery charge ₹${baseDeliveryCharge})`
+          } else {
+            distanceText = ` (${dist} km away • Outside ${maxServiceRadius}km local delivery range)`
+          }
+        }
+
         try {
           const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
           if (res.ok) {
             const data = await res.json()
             const detectedAddress = data.display_name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
             setFormData((prev) => ({ ...prev, address: detectedAddress }))
-            setLocationStatus(`📍 Detected: ${detectedAddress}`)
+            setLocationStatus(`📍 Detected: ${detectedAddress}${distanceText}`)
           } else {
             const fallbackAddr = `GPS: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
             setFormData((prev) => ({ ...prev, address: fallbackAddr }))
-            setLocationStatus(`📍 Location detected (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`)
+            setLocationStatus(`📍 Location detected: ${fallbackAddr}${distanceText}`)
           }
         } catch {
           const fallbackAddr = `GPS: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
           setFormData((prev) => ({ ...prev, address: fallbackAddr }))
-          setLocationStatus(`📍 Location detected (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`)
+          setLocationStatus(`📍 Location detected: ${fallbackAddr}${distanceText}`)
         } finally {
           setIsDetecting(false)
         }
@@ -158,24 +164,114 @@ export default function CheckoutPage() {
     )
   }
 
-  const executeOrderPlacement = async () => {
+  // Geocode address when user finishes typing
+  const handleAddressBlur = async () => {
+    if (!formData.address.trim() || formData.address.length < 5 || !storeLat || !storeLng) return
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(formData.address)}&limit=1`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data && data.length > 0) {
+          const lat = parseFloat(data[0].lat)
+          const lon = parseFloat(data[0].lon)
+          setCustomerCoords({ lat, lng: lon })
+          const dist = calculateDistanceKm(storeLat, storeLng, lat, lon)
+          setCalculatedDistance(dist)
+          if (dist <= freeRadius) {
+            setLocationStatus(`📍 Address verified: ${dist} km from store (Within ${freeRadius}km Free Delivery zone! 🎉)`)
+          } else if (dist <= maxServiceRadius) {
+            setLocationStatus(`📍 Address verified: ${dist} km from store (Standard delivery charge ₹${baseDeliveryCharge})`)
+          } else {
+            setLocationStatus(`📍 Address verified: ${dist} km from store (Outside ${maxServiceRadius}km local delivery range)`)
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Address geocoding note:', err.message)
+    }
+  }
+
+  // Out of zone courier order via WhatsApp
+  const handleWhatsAppCourierOrder = () => {
+    if (!formData.fullName.trim()) {
+      setSubmitError('Please enter your full name.')
+      return
+    }
+    const cleanPhone = formData.phone.replace(/\D/g, '')
+    if (!/^([6-9]\d{9})$/.test(cleanPhone)) {
+      setSubmitError('Please enter a valid 10-digit Indian mobile number.')
+      return
+    }
+    if (!formData.address.trim()) {
+      setSubmitError('Please enter your delivery address.')
+      return
+    }
+
+    let text = `Hello Royal Dry Fruits! I am placing an Out-of-Station Order:\n\n`
+    text += `👤 *Customer*: ${formData.fullName.trim()}\n`
+    text += `📞 *Phone*: +91 ${cleanPhone}\n`
+    text += `📍 *Delivery Address*: ${formData.address.trim()}\n`
+    if (calculatedDistance) {
+      text += `📏 *Distance*: ${calculatedDistance} km from ${storeSettings?.storeName || 'Pippara store'}\n`
+    }
+    text += `\n*Order Items*:\n`
+    items.forEach(i => {
+      text += `• ${i.quantity}x ${i.name} (${i.weight || '500g'}) - ₹${i.price * i.quantity}\n`
+    })
+    text += `\n*Cart Subtotal*: ₹${subtotal}\n\n`
+    text += `Please let me know the courier shipping charges and payment methods to dispatch my order. Thank you!`
+
+    const link = getWhatsAppLink(text, storeSettings?.phone || STORE_WHATSAPP)
+    window.open(link, '_blank')
+  }
+
+  const handlePlaceOrder = async (e) => {
+    if (e) e.preventDefault()
+    setSubmitError('')
+
+    // If outside local radius, route to WhatsApp Courier
+    if (isOutsideServiceZone) {
+      handleWhatsAppCourierOrder()
+      return
+    }
+
+    if (!formData.fullName.trim()) {
+      setSubmitError('Please enter your full name.')
+      return
+    }
+
+    const cleanPhone = formData.phone.replace(/\D/g, '')
+    if (!/^([6-9]\d{9})$/.test(cleanPhone)) {
+      setSubmitError('Please enter a valid 10-digit Indian mobile number.')
+      return
+    }
+
+    if (!formData.address.trim()) {
+      setSubmitError('Please enter your delivery address.')
+      return
+    }
+
     if (items.length === 0) {
       setSubmitError('Your cart is empty.')
       return
     }
 
+    if (minOrderValue > 0 && subtotal < minOrderValue) {
+      setSubmitError(`Minimum order value is ${formatPrice(minOrderValue)}. Please add more items to continue.`)
+      return
+    }
+
     setIsSubmitting(true)
-    setSubmitError('')
-    const currentTotal = total
+    const currentTotal = effectiveTotal
 
     try {
       // POST order to backend PostgreSQL database
       const createdOrder = await createOrderApi({
-        customerName: formData.fullName,
-        customerPhone: formData.phone,
-        deliveryAddress: formData.address,
+        customerName: formData.fullName.trim(),
+        customerPhone: cleanPhone,
+        deliveryAddress: formData.address.trim(),
         paymentMethod: formData.paymentMethod.toUpperCase(),
-        deliveryCharge: deliveryFee,
+        deliveryCharge: effectiveDeliveryFee,
         items: items,
       })
 
@@ -183,9 +279,9 @@ export default function CheckoutPage() {
       const localOrderObj = {
         id: createdOrder.id,
         orderNumber: createdOrder.orderNumber || createdOrder.id,
-        customerName: formData.fullName,
-        customerPhone: formData.phone,
-        deliveryAddress: formData.address,
+        customerName: formData.fullName.trim(),
+        customerPhone: cleanPhone,
+        deliveryAddress: formData.address.trim(),
         paymentMethod: formData.paymentMethod,
         totalAmount: createdOrder.totalAmount || currentTotal,
         createdAt: new Date().toISOString(),
@@ -221,9 +317,9 @@ export default function CheckoutPage() {
       const localOrderObj = {
         id: fallbackOrderId,
         orderNumber: fallbackOrderId,
-        customerName: formData.fullName,
-        customerPhone: formData.phone,
-        deliveryAddress: formData.address,
+        customerName: formData.fullName.trim(),
+        customerPhone: cleanPhone,
+        deliveryAddress: formData.address.trim(),
         paymentMethod: formData.paymentMethod,
         totalAmount: currentTotal,
         createdAt: new Date().toISOString(),
@@ -257,23 +353,6 @@ export default function CheckoutPage() {
     }
   }
 
-  // Determine what the sidebar button does based on the current step
-  const getSidebarButtonAction = () => {
-    if (currentStep === 1) return handleSendOtp
-    if (currentStep === 2) return handleVerifyOtp
-    if (currentStep === 3) return handleAddressContinue
-    if (currentStep === 4) return executeOrderPlacement
-    return () => {}
-  }
-
-  const getSidebarButtonLabel = () => {
-    if (currentStep === 1) return 'Get OTP'
-    if (currentStep === 2) return 'Verify & Continue'
-    if (currentStep === 3) return 'Proceed to Payment'
-    if (currentStep === 4) return 'Place Order'
-    return 'Continue'
-  }
-
   return (
     <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-8 md:py-12">
       <div className="mb-8">
@@ -281,266 +360,209 @@ export default function CheckoutPage() {
           Checkout
         </h1>
         <p className="font-body text-body-lg text-on-surface-variant">
-          Complete your order securely in 4 easy steps.
+          Complete your order securely with Cash on Delivery or WhatsApp Courier Shipping.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
-        {/* Left Column: Forms and Map */}
+      <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
+        {/* Left Column: Customer & Delivery Details */}
         <div className="lg:col-span-8 flex flex-col gap-6">
-          
-          {/* STEP 1: Mobile Number */}
-          <section className={`bg-surface-container rounded-xl shadow-[0_4px_20px_0_rgba(48,24,0,0.06)] overflow-hidden transition-all duration-300 ${currentStep === 1 ? 'ring-2 ring-primary' : 'opacity-80'}`}>
-            <div 
-              className={`p-6 flex items-center justify-between cursor-pointer ${currentStep !== 1 && currentStep > 1 ? 'bg-surface-container-high' : ''}`}
-              onClick={() => { if (!isLoggedIn) setCurrentStep(1) }}
-            >
+
+          {/* STEP 1: Customer Details */}
+          <section className="bg-surface-container rounded-xl shadow-[0_4px_20px_0_rgba(48,24,0,0.06)] overflow-hidden">
+            <div className="p-6 border-b border-outline-variant/30">
               <h2 className="font-headline text-headline-sm text-primary flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${currentStep === 1 ? 'bg-primary text-on-primary' : currentStep > 1 ? 'bg-secondary text-on-secondary' : 'bg-outline-variant text-on-surface-variant'}`}>
-                  {currentStep > 1 ? <CheckCircle2 className="w-5 h-5" /> : '1'}
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold bg-primary text-on-primary">
+                  1
                 </div>
-                Mobile Number
+                Customer & Contact Details
               </h2>
-              {currentStep > 1 && !isLoggedIn && (
-                <span className="text-secondary font-label text-label-sm hover:underline">Edit</span>
-              )}
             </div>
-            
-            {currentStep === 1 && (
-              <div className="p-6 pt-0 border-t border-outline-variant/30 mt-4 animate-fadeIn">
-                <form onSubmit={handleSendOtp} className="flex flex-col gap-6">
-                  <div className="flex flex-col gap-2">
-                    <label className="font-label text-label-md text-on-surface-variant" htmlFor="phone">
-                      Enter your mobile number to sign in or create an account
-                    </label>
-                    <div className="relative flex items-center max-w-md">
-                      <span className="absolute left-4 text-on-surface-variant font-bold font-body">+91</span>
-                      <input
-                        id="phone"
-                        type="tel"
-                        required
-                        placeholder="98765 43210"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        className="w-full bg-surface border border-outline-variant/50 rounded-lg pl-12 pr-4 py-3 font-body text-body-md text-on-surface outline-none focus:ring-2 focus:ring-surface-tint focus:border-surface-tint transition-all"
-                      />
-                    </div>
+
+            <div className="p-6 flex flex-col gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex flex-col gap-2">
+                  <label className="font-label text-label-md text-on-surface font-semibold" htmlFor="fullName">
+                    Full Name *
+                  </label>
+                  <input
+                    id="fullName"
+                    type="text"
+                    required
+                    placeholder="e.g. Rajesh Kumar"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    className="w-full bg-surface border border-outline-variant/50 rounded-lg px-4 py-3 font-body text-body-md text-on-surface outline-none focus:ring-2 focus:ring-surface-tint focus:border-surface-tint transition-all"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="font-label text-label-md text-on-surface font-semibold" htmlFor="phone">
+                    Mobile Number *
+                  </label>
+                  <div className="relative flex items-center">
+                    <span className="absolute left-4 text-on-surface-variant font-bold font-body">+91</span>
+                    <input
+                      id="phone"
+                      type="tel"
+                      required
+                      placeholder="98765 43210"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      className="w-full bg-surface border border-outline-variant/50 rounded-lg pl-14 pr-4 py-3 font-body text-body-md text-on-surface outline-none focus:ring-2 focus:ring-surface-tint focus:border-surface-tint transition-all"
+                    />
                   </div>
-                  <div>
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="bg-primary text-on-primary font-label text-label-md py-3 px-8 rounded-full shadow-sm hover:opacity-90 transition-all flex items-center gap-2 font-bold cursor-pointer disabled:opacity-50"
-                    >
-                      {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Get OTP'}
-                    </button>
-                  </div>
-                </form>
+                </div>
               </div>
-            )}
+            </div>
           </section>
 
-          {/* STEP 2: OTP */}
-          {!isLoggedIn && (
-            <section className={`bg-surface-container rounded-xl shadow-[0_4px_20px_0_rgba(48,24,0,0.06)] overflow-hidden transition-all duration-300 ${currentStep === 2 ? 'ring-2 ring-primary' : 'opacity-80'}`}>
-              <div className="p-6 flex items-center justify-between">
-                <h2 className="font-headline text-headline-sm text-primary flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${currentStep === 2 ? 'bg-primary text-on-primary' : currentStep > 2 ? 'bg-secondary text-on-secondary' : 'bg-outline-variant text-on-surface-variant'}`}>
-                    {currentStep > 2 ? <CheckCircle2 className="w-5 h-5" /> : '2'}
-                  </div>
-                  OTP Verification
-                </h2>
-              </div>
-              
-              {currentStep === 2 && (
-                <div className="p-6 pt-0 border-t border-outline-variant/30 mt-4 animate-fadeIn">
-                  <form onSubmit={handleVerifyOtp} className="flex flex-col gap-6">
-                    <div className="flex flex-col gap-2">
-                      <p className="font-body text-body-sm text-on-surface-variant">
-                        Enter the 4-digit code sent to +91 {formData.phone.replace(/\D/g, '').slice(-10)}
-                      </p>
-                      <input
-                        id="otp"
-                        type="text"
-                        maxLength={4}
-                        required
-                        autoFocus
-                        placeholder="• • • •"
-                        value={formData.otp}
-                        onChange={handleChange}
-                        className="w-full max-w-xs text-center text-2xl font-bold tracking-[0.5em] bg-surface-container border border-outline-variant/50 rounded-xl py-3.5 text-primary outline-none focus:border-secondary transition-all"
-                      />
-                    </div>
-                    
-                    <div className="w-full max-w-xs bg-primary/10 border border-primary/20 rounded-lg p-2 text-center text-xs font-medium text-primary">
-                      For testing, please use OTP: <strong>1234</strong>
-                    </div>
-
-                    <div>
-                      <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="bg-secondary text-on-secondary font-label text-label-md py-3 px-8 rounded-full shadow-sm hover:opacity-90 transition-all flex items-center gap-2 font-bold cursor-pointer disabled:opacity-50"
-                      >
-                        {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Verify & Continue'}
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              )}
-            </section>
-          )}
-
-          {/* STEP 3: Address */}
-          <section className={`bg-surface-container rounded-xl shadow-[0_4px_20px_0_rgba(48,24,0,0.06)] overflow-hidden transition-all duration-300 ${currentStep === 3 ? 'ring-2 ring-primary' : 'opacity-80'}`}>
-            <div 
-              className={`p-6 flex items-center justify-between cursor-pointer ${currentStep > 3 ? 'bg-surface-container-high' : ''}`}
-              onClick={() => { if (currentStep > 3) setCurrentStep(3) }}
-            >
+          {/* STEP 2: Delivery Address */}
+          <section className="bg-surface-container rounded-xl shadow-[0_4px_20px_0_rgba(48,24,0,0.06)] overflow-hidden">
+            <div className="p-6 border-b border-outline-variant/30">
               <h2 className="font-headline text-headline-sm text-primary flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${currentStep === 3 ? 'bg-primary text-on-primary' : currentStep > 3 ? 'bg-secondary text-on-secondary' : 'bg-outline-variant text-on-surface-variant'}`}>
-                  {currentStep > 3 ? <CheckCircle2 className="w-5 h-5" /> : isLoggedIn ? '2' : '3'}
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold bg-primary text-on-primary">
+                  2
                 </div>
                 Delivery Address
               </h2>
-              {currentStep > 3 && (
-                <span className="text-secondary font-label text-label-sm hover:underline">Edit</span>
-              )}
             </div>
-            
-            {currentStep === 3 && (
-              <div className="p-6 pt-0 border-t border-outline-variant/30 mt-4 animate-fadeIn">
-                <div className="mb-6 mt-2">
-                  <div className="flex items-start gap-3 bg-secondary-container/20 p-4 rounded-lg border border-secondary-container/30">
-                    <Info className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
-                    <p className="font-body text-body-md text-on-surface-variant">
-                      <span className="font-semibold text-secondary">COD available only within 10km of our store.</span> Please pin your exact location below for accurate delivery.
+
+            <div className="p-6 flex flex-col gap-6">
+              {/* Dynamic Service Radius Banner */}
+              {isOutsideServiceZone ? (
+                <div className="flex items-start gap-3 bg-amber-50 p-4 rounded-lg border border-amber-200 text-amber-900">
+                  <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div className="text-xs space-y-1">
+                    <p className="font-bold text-amber-900">
+                      📍 Your location is {calculatedDistance} km away (Outside our {maxServiceRadius}km local delivery range).
+                    </p>
+                    <p className="text-amber-800">
+                      We dispatch out-of-town orders across India via <strong>Speed Post / Professional Courier</strong>. Click <strong>"Order on WhatsApp"</strong> below to arrange courier shipping and receive your parcel safely!
                     </p>
                   </div>
                 </div>
-                <form onSubmit={handleAddressContinue} className="flex flex-col gap-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="flex flex-col gap-2">
-                      <label className="font-label text-label-md text-on-surface-variant" htmlFor="fullName">
-                        Full Name
-                      </label>
-                      <input
-                        id="fullName"
-                        type="text"
-                        required
-                        placeholder="John Doe"
-                        value={formData.fullName}
-                        onChange={handleChange}
-                        className="bg-surface border border-outline-variant/50 rounded-lg px-4 py-3 font-body text-body-md text-on-surface outline-none focus:ring-2 focus:ring-surface-tint focus:border-surface-tint transition-all"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="font-label text-label-md text-on-surface-variant" htmlFor="address">
-                        Street Address
-                      </label>
-                      <input
-                        id="address"
-                        type="text"
-                        required
-                        placeholder="123 Main St, Apartment 4B"
-                        value={formData.address}
-                        onChange={handleChange}
-                        className="bg-surface border border-outline-variant/50 rounded-lg px-4 py-3 font-body text-body-md text-on-surface outline-none focus:ring-2 focus:ring-surface-tint focus:border-surface-tint transition-all"
-                      />
-                    </div>
-                  </div>
-                  
-                  {/* Map Section */}
-                  <div className="relative w-full h-64 bg-surface-dim rounded-lg overflow-hidden border border-outline-variant/30 group shadow-inner">
-                    <img
-                      src={mapImg}
-                      alt="Delivery location map"
-                      className="w-full h-full object-cover filter contrast-[0.95]"
-                    />
-                    
-                    <div className="absolute inset-0 bg-primary/10 flex flex-col items-center justify-center p-4">
-                      <button
-                        type="button"
-                        disabled={isDetecting}
-                        onClick={handleDetectLocation}
-                        className="bg-primary text-on-primary px-5 py-3 rounded-full font-label text-label-md shadow-lg hover:bg-secondary transition-all flex items-center gap-2 cursor-pointer disabled:opacity-75"
-                      >
-                        {isDetecting ? (
-                          <>
-                            <Loader2 className="w-5 h-5 animate-spin text-tertiary-fixed" />
-                            <span>Detecting Location...</span>
-                          </>
-                        ) : (
-                          <>
-                            <LocateFixed className="w-5 h-5 text-tertiary-fixed" />
-                            <span>Detect My Current Location</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
+              ) : (
+                <div className="flex items-start gap-3 bg-secondary-container/20 p-4 rounded-lg border border-secondary-container/30">
+                  <Info className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
+                  <p className="font-body text-body-md text-on-surface-variant">
+                    <span className="font-semibold text-secondary">Free Fast Delivery within {freeRadius}km radius</span> (Local service range up to {maxServiceRadius}km). Please enter your complete delivery address or click detect below.
+                  </p>
+                </div>
+              )}
 
-                  {/* Location detection status text */}
-                  {locationStatus && (
-                    <div className="text-xs font-label text-secondary bg-surface-container-high px-3 py-2 rounded-lg flex items-center gap-2 border border-outline-variant/30">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                      <span className="truncate">{locationStatus}</span>
-                    </div>
-                  )}
-
-                  <div>
-                    <button
-                      type="submit"
-                      className="bg-primary text-on-primary font-label text-label-md py-3 px-8 rounded-full shadow-sm hover:opacity-90 transition-all flex items-center gap-2 font-bold cursor-pointer"
-                    >
-                      Proceed to Payment
-                    </button>
-                  </div>
-                </form>
+              <div className="flex flex-col gap-2">
+                <label className="font-label text-label-md text-on-surface font-semibold" htmlFor="address">
+                  Street Address / House No / Landmark *
+                </label>
+                <textarea
+                  id="address"
+                  rows="3"
+                  required
+                  placeholder="Enter Your Complete Address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  onBlur={handleAddressBlur}
+                  className="w-full bg-surface border border-outline-variant/50 rounded-lg px-4 py-3 font-body text-body-md text-on-surface outline-none focus:ring-2 focus:ring-surface-tint focus:border-surface-tint transition-all resize-none"
+                />
               </div>
-            )}
+
+              {/* Map & GPS Section */}
+              <div className="relative w-full h-48 bg-surface-dim rounded-lg overflow-hidden border border-outline-variant/30 group shadow-inner">
+                <img
+                  src={mapImg}
+                  alt="Delivery location map"
+                  className="w-full h-full object-cover filter contrast-[0.95]"
+                />
+
+                <div className="absolute inset-0 bg-primary/10 flex flex-col items-center justify-center p-4">
+                  <button
+                    type="button"
+                    disabled={isDetecting}
+                    onClick={handleDetectLocation}
+                    className="bg-primary text-on-primary px-5 py-3 rounded-full font-label text-label-md shadow-lg hover:bg-secondary transition-all flex items-center gap-2 cursor-pointer disabled:opacity-75"
+                  >
+                    {isDetecting ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin text-tertiary-fixed" />
+                        <span>Detecting Location...</span>
+                      </>
+                    ) : (
+                      <>
+                        <LocateFixed className="w-5 h-5 text-tertiary-fixed" />
+                        <span>Detect My Current Location</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Location detection status text */}
+              {locationStatus && (
+                <div className={`text-xs font-label px-3 py-2 rounded-lg flex items-center gap-2 border ${isOutsideServiceZone ? 'bg-amber-50 text-amber-900 border-amber-200' : 'bg-surface-container-high text-secondary border-outline-variant/30'}`}>
+                  {isOutsideServiceZone ? (
+                    <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                  ) : (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  )}
+                  <span className="truncate">{locationStatus}</span>
+                </div>
+              )}
+            </div>
           </section>
 
-          {/* STEP 4: Payment Method */}
-          <section className={`bg-surface-container rounded-xl shadow-[0_4px_20px_0_rgba(48,24,0,0.06)] overflow-hidden transition-all duration-300 ${currentStep === 4 ? 'ring-2 ring-primary' : 'opacity-80'}`}>
-            <div className="p-6 flex items-center justify-between">
+          {/* STEP 3: Payment Method */}
+          <section className="bg-surface-container rounded-xl shadow-[0_4px_20px_0_rgba(48,24,0,0.06)] overflow-hidden">
+            <div className="p-6 border-b border-outline-variant/30">
               <h2 className="font-headline text-headline-sm text-primary flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${currentStep === 4 ? 'bg-primary text-on-primary' : 'bg-outline-variant text-on-surface-variant'}`}>
-                  {isLoggedIn ? '3' : '4'}
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold bg-primary text-on-primary">
+                  3
                 </div>
                 Payment Options
               </h2>
             </div>
-            
-            {currentStep === 4 && (
-              <div className="p-6 pt-0 border-t border-outline-variant/30 mt-4 animate-fadeIn">
-                <div className="flex flex-col gap-3">
-                  <label className="flex items-center gap-3 p-4 border border-secondary rounded-lg bg-secondary/5 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="payment"
-                      checked={formData.paymentMethod === 'cod'}
-                      onChange={() => setFormData((prev) => ({ ...prev, paymentMethod: 'cod' }))}
-                      className="text-secondary focus:ring-secondary accent-secondary"
-                    />
-                    <span className="font-body text-body-md text-on-surface font-semibold">
-                      Cash on Delivery (COD)
+
+            <div className="p-6">
+              <div className="flex flex-col gap-3">
+                <label className={`flex items-center gap-3 p-4 border rounded-lg ${isOutsideServiceZone ? 'border-outline-variant/50 bg-surface opacity-60 cursor-not-allowed' : 'border-secondary bg-secondary/5 cursor-pointer'}`}>
+                  <input
+                    type="radio"
+                    name="payment"
+                    disabled={isOutsideServiceZone}
+                    checked={formData.paymentMethod === 'cod' && !isOutsideServiceZone}
+                    onChange={() => setFormData((prev) => ({ ...prev, paymentMethod: 'cod' }))}
+                    className="text-secondary focus:ring-secondary accent-secondary w-4 h-4"
+                  />
+                  <div>
+                    <span className="font-body text-body-md text-on-surface font-bold block">
+                      Cash on Delivery (COD) {isOutsideServiceZone && '(Local delivery zone only)'}
                     </span>
-                  </label>
-                  <label className="flex items-center gap-3 p-4 border border-outline-variant/50 rounded-lg bg-surface cursor-not-allowed opacity-50">
-                    <input
-                      type="radio"
-                      name="payment"
-                      disabled
-                      className="text-secondary focus:ring-secondary"
-                    />
-                    <span className="font-body text-body-md text-on-surface-variant">
-                      Online Payment (Coming Soon)
+                    <span className="text-xs text-on-surface-variant">
+                      {isOutsideServiceZone
+                        ? `Available only within ${maxServiceRadius}km of our shop. Out-of-town orders are fulfilled via Courier.`
+                        : 'Pay easily with Cash or UPI upon receiving your local delivery.'}
                     </span>
-                  </label>
-                </div>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 p-4 border border-outline-variant/50 rounded-lg bg-surface cursor-not-allowed opacity-50">
+                  <input
+                    type="radio"
+                    name="payment"
+                    disabled
+                    className="text-secondary focus:ring-secondary w-4 h-4"
+                  />
+                  <div>
+                    <span className="font-body text-body-md text-on-surface-variant font-semibold block">
+                      Online Payment (UPI, Cards, NetBanking)
+                    </span>
+                    <span className="text-xs text-on-surface-variant">
+                      Coming Soon
+                    </span>
+                  </div>
+                </label>
               </div>
-            )}
+            </div>
           </section>
 
         </div>
@@ -588,17 +610,46 @@ export default function CheckoutPage() {
                 <span>Subtotal</span>
                 <span>{formatPrice(subtotal)}</span>
               </div>
+
+              {calculatedDistance !== null && (
+                <div className="flex justify-between items-center text-xs text-on-surface-variant">
+                  <span>Delivery Distance</span>
+                  <span className={`font-semibold ${isOutsideServiceZone ? 'text-amber-700' : isFreeDistanceZone ? 'text-emerald-700' : 'text-primary'}`}>
+                    {calculatedDistance} km ({isOutsideServiceZone ? 'Outside Service Zone' : isFreeDistanceZone ? 'Free Zone' : 'Standard Zone'})
+                  </span>
+                </div>
+              )}
+
               <div className="flex justify-between items-center font-body text-body-md text-on-surface-variant">
                 <span>Delivery</span>
-                <span className="text-tertiary-container font-semibold">Free (Within 10km)</span>
+                {isOutsideServiceZone ? (
+                  <span className="font-label text-xs text-amber-800 font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                    Courier Rate via WhatsApp
+                  </span>
+                ) : effectiveDeliveryFee === 0 ? (
+                  <span className="font-label text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded">
+                    FREE Delivery
+                  </span>
+                ) : (
+                  <span className="font-semibold text-primary">
+                    {formatPrice(effectiveDeliveryFee)}
+                  </span>
+                )}
               </div>
+
+              {amountNeededForFreeDelivery > 0 && !isFreeDistanceZone && !isOutsideServiceZone && (
+                <p className="text-[11px] text-on-surface-variant text-right">
+                  Add <strong>{formatPrice(amountNeededForFreeDelivery)}</strong> more for <strong>FREE Delivery</strong>
+                </p>
+              )}
+
               <div className="flex justify-between items-center font-headline text-headline-sm text-primary mt-2 pt-2 border-t border-outline-variant/30">
                 <span>Total</span>
-                <span>{formatPrice(total)}</span>
+                <span>{formatPrice(isOutsideServiceZone ? subtotal : effectiveTotal)}</span>
               </div>
             </div>
 
-            {/* Action Button */}
+            {/* Error Message */}
             {submitError && (
               <div className="mb-4 text-xs font-label text-red-600 bg-red-50 p-3 rounded-lg flex items-center gap-2 border border-red-200">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -606,31 +657,44 @@ export default function CheckoutPage() {
               </div>
             )}
 
-            <button
-              type="button"
-              onClick={(e) => getSidebarButtonAction()(e)}
-              disabled={items.length === 0 || isSubmitting}
-              className={`w-full text-on-primary font-label text-label-md py-4 rounded-full shadow-sm hover:opacity-90 transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed font-bold cursor-pointer ${currentStep === 4 ? 'bg-secondary' : 'bg-primary'}`}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Processing...</span>
-                </>
-              ) : (
-                <>
-                  <span>{getSidebarButtonLabel()}</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </>
-              )}
-            </button>
+            {/* Submit Action Button */}
+            {isOutsideServiceZone ? (
+              <button
+                type="button"
+                onClick={handleWhatsAppCourierOrder}
+                disabled={items.length === 0}
+                className="w-full text-white font-label text-label-md py-4 rounded-full shadow-sm hover:brightness-105 transition-all flex items-center justify-center gap-2 font-bold cursor-pointer bg-[#25D366]"
+              >
+                <WhatsAppIcon className="w-5 h-5" />
+                <span>Order on WhatsApp (Courier Shipping)</span>
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={items.length === 0 || isSubmitting}
+                className="w-full text-on-primary font-label text-label-md py-4 rounded-full shadow-sm hover:opacity-90 transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed font-bold cursor-pointer bg-primary"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>Placing Order...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Place Order (COD)</span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
+              </button>
+            )}
+
             <p className="font-label text-[12px] text-center text-on-surface-variant mt-4 flex justify-center items-center gap-1">
               <Lock className="w-3.5 h-3.5" />
-              Secure Checkout
+              {isOutsideServiceZone ? 'Safe Courier Dispatch' : 'Secure Cash on Delivery Checkout'}
             </p>
           </section>
         </div>
-      </div>
+      </form>
     </div>
   )
 }

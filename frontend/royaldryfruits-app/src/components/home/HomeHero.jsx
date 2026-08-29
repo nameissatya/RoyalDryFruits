@@ -1,19 +1,20 @@
 import { Link } from 'react-router-dom'
 import { Banknote, MapPin, CheckCircle2, ShieldCheck } from 'lucide-react'
 import WhatsAppIcon from '../common/WhatsAppIcon'
+import { getWhatsAppLink } from '../../config/storeConfig'
 import heroImg from '../../assets/images/home-hero.jpg'
 
 const trustBadges = [
   { icon: Banknote, label: 'COD Available' },
-  { icon: MapPin, label: 'Delivery within 10km' },
+  { icon: MapPin, label: 'Fast Local Delivery' },
   { icon: CheckCircle2, label: '100% Fresh Stock' },
   { icon: ShieldCheck, label: 'Secure Packaging' },
 ]
 
 export default function HomeHero() {
   const handleWhatsAppOrder = () => {
-    const text = encodeURIComponent('Hi Royal Dry Fruits! I would like to place an order.')
-    window.open(`https://wa.me/919014060329?text=${text}`, '_blank')
+    const link = getWhatsAppLink('Hi Royal Dry Fruits! I would like to place an order.')
+    window.open(link, '_blank')
   }
 
   return (

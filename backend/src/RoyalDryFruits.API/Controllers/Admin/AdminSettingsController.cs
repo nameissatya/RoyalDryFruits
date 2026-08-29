@@ -37,6 +37,8 @@ public class AdminSettingsController : ControllerBase
             Email = settings.Email,
             Latitude = settings.Latitude,
             Longitude = settings.Longitude,
+            FreeDeliveryRadius = settings.FreeDeliveryRadius,
+            DeliveryRadius = settings.DeliveryRadius,
             DeliveryCharge = settings.DeliveryCharge,
             MinOrderValue = settings.MinOrderValue,
             FreeDeliveryThreshold = settings.FreeDeliveryThreshold
@@ -59,6 +61,8 @@ public class AdminSettingsController : ControllerBase
         settings.Email = request.Email;
         settings.Latitude = request.Latitude;
         settings.Longitude = request.Longitude;
+        settings.FreeDeliveryRadius = request.FreeDeliveryRadius;
+        settings.DeliveryRadius = request.DeliveryRadius;
         settings.DeliveryCharge = request.DeliveryCharge;
         settings.MinOrderValue = request.MinOrderValue;
         settings.FreeDeliveryThreshold = request.FreeDeliveryThreshold;

@@ -2,11 +2,12 @@ import { Link } from 'react-router-dom'
 import { Heart } from 'lucide-react'
 import { InstagramIcon, FacebookIcon, YoutubeIcon } from '../common/SocialIcons'
 import WhatsAppIcon from '../common/WhatsAppIcon'
+import { getWhatsAppLink } from '../../config/storeConfig'
 
 const exploreLinks = [
   { label: 'Store Location', href: '/store-location' },
   { label: 'Contact Us', href: '/contact' },
-  { label: 'Delivery Policy (10km Radius)', href: '/delivery-policy' },
+  { label: 'Delivery Policy (Local Radius)', href: '/delivery-policy' },
 ]
 
 const legalLinks = [
@@ -33,17 +34,17 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Explore */}
+          {/* Quick Links */}
           <div className="col-span-1">
             <h4 className="font-label text-label-md text-primary font-bold mb-4 uppercase tracking-wider">
               Explore
             </h4>
-            <ul className="space-y-3 flex flex-col">
+            <ul className="space-y-3">
               {exploreLinks.map((link) => (
                 <li key={link.label}>
                   <Link
                     to={link.href}
-                    className="text-on-surface-variant font-body text-body-md hover:text-secondary transition-colors"
+                    className="text-on-surface-variant hover:text-primary font-body text-body-md transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -52,17 +53,17 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Legal */}
+          {/* Legal / Info Links */}
           <div className="col-span-1">
             <h4 className="font-label text-label-md text-primary font-bold mb-4 uppercase tracking-wider">
-              Legal
+              Information
             </h4>
-            <ul className="space-y-3 flex flex-col">
+            <ul className="space-y-3">
               {legalLinks.map((link) => (
                 <li key={link.label}>
                   <Link
                     to={link.href}
-                    className="text-on-surface-variant font-body text-body-md hover:text-secondary transition-colors"
+                    className="text-on-surface-variant hover:text-primary font-body text-body-md transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -70,6 +71,7 @@ export default function Footer() {
               ))}
             </ul>
           </div>
+
           {/* Social Links */}
           <div className="col-span-1 flex flex-col justify-start lg:items-end">
             <h4 className="font-label text-label-md text-primary font-bold mb-4 uppercase tracking-wider hidden lg:block invisible">
@@ -77,7 +79,7 @@ export default function Footer() {
             </h4>
             <div className="flex items-center gap-4">
               <a
-                href="https://wa.me/919014060329"
+                href={getWhatsAppLink()}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-[#25D366] hover:bg-surface-container-highest transition-colors cursor-pointer"

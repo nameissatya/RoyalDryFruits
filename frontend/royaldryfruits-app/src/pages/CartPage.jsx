@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { Image as ImageIcon, Minus, Plus, Trash2, ArrowRight, CheckCircle2, Truck, ShoppingCart } from 'lucide-react'
 import WhatsAppIcon from '../components/common/WhatsAppIcon'
 import { useCart } from '../context/CartContext'
+import { getWhatsAppLink, STORE_WHATSAPP } from '../config/storeConfig'
 import almondsImg from '../assets/images/cat-almonds.jpg'
 import cashewsImg from '../assets/images/cat-cashews.jpg'
 
@@ -93,7 +94,7 @@ function CartItem({ item }) {
 }
 
 function OrderSummary() {
-  const { items, subtotal, deliveryFee, total } = useCart()
+  const { items, subtotal, deliveryFee, total, isFreeDelivery, freeDeliveryThreshold, amountNeededForFreeDelivery, minOrderValue, storeSettings } = useCart()
 
   const handleWhatsAppOrder = () => {
     let text = 'Hello Royal Dry Fruits! I would like to place an order:\n\n'
@@ -109,8 +110,8 @@ function OrderSummary() {
     }
     text += `\n*Total Amount: ₹${total}*\n\nPlease confirm my order and let me know the payment options.`
 
-    const encodedText = encodeURIComponent(text)
-    window.open(`https://wa.me/919014060329?text=${encodedText}`, '_blank')
+    const link = getWhatsAppLink(text, storeSettings?.phone || STORE_WHATSAPP)
+    window.open(link, '_blank')
   }
 
   return (
@@ -119,12 +120,44 @@ function OrderSummary() {
         Order Summary
       </h2>
 
+      {/* Free Delivery Progress Banner */}
+      {freeDeliveryThreshold > 0 && (
+        <div className="mb-6 p-3 rounded-lg border text-xs">
+          {isFreeDelivery ? (
+            <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50/50 p-2 rounded">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <span className="font-semibold">🎉 You unlocked FREE Delivery!</span>
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-on-surface-variant">
+                <span>Add <strong>{formatPrice(amountNeededForFreeDelivery)}</strong> more for <strong>FREE Delivery</strong></span>
+                <span className="font-semibold">{Math.round((subtotal / freeDeliveryThreshold) * 100)}%</span>
+              </div>
+              <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+                <div 
+                  className="bg-primary h-full rounded-full transition-all duration-500" 
+                  style={{ width: `${Math.min(100, (subtotal / freeDeliveryThreshold) * 100)}%` }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Minimum order notice */}
+      {minOrderValue > 0 && subtotal < minOrderValue && (
+        <div className="mb-6 p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-center gap-2">
+          <span>⚠️ Minimum order value is <strong>{formatPrice(minOrderValue)}</strong></span>
+        </div>
+      )}
+
       <div className="space-y-4 mb-6">
         <div className="flex justify-between items-center">
           <span className="font-body text-body-md text-on-surface-variant">
             Subtotal
           </span>
-          <span className="font-label text-label-md text-primary">
+          <span className="font-label text-label-md text-primary font-semibold">
             {formatPrice(subtotal)}
           </span>
         </div>
@@ -132,9 +165,15 @@ function OrderSummary() {
           <span className="font-body text-body-md text-on-surface-variant">
             Delivery Fee
           </span>
-          <span className="font-label text-label-md text-tertiary-fixed-dim">
-            {deliveryFee === 0 ? '₹0 (Local)' : formatPrice(deliveryFee)}
-          </span>
+          {deliveryFee === 0 ? (
+            <span className="font-label text-label-md text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded">
+              FREE
+            </span>
+          ) : (
+            <span className="font-label text-label-md text-primary font-semibold">
+              {formatPrice(deliveryFee)}
+            </span>
+          )}
         </div>
       </div>
 

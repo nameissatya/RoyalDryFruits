@@ -15,19 +15,21 @@ export async function updateSettingsApi(settingsData) {
     method: 'PUT',
     headers: getAuthHeaders(),
     body: JSON.stringify({
-      storeName: settingsData.storeName || 'Royal Dry Fruits',
+      storeName: settingsData.storeName || '',
       phone: settingsData.phone || '',
       address: settingsData.address || '',
       email: settingsData.email || '',
-      latitude: Number(settingsData.latitude) || 18.9220,
-      longitude: Number(settingsData.longitude) || 72.8347,
-      deliveryCharge: Number(settingsData.deliveryCharge) || 50,
-      minOrderValue: Number(settingsData.minOrderValue) || 500,
-      freeDeliveryThreshold: Number(settingsData.freeDeliveryThreshold) || 1500,
+      latitude: settingsData.latitude !== '' && !isNaN(settingsData.latitude) ? Number(settingsData.latitude) : 0,
+      longitude: settingsData.longitude !== '' && !isNaN(settingsData.longitude) ? Number(settingsData.longitude) : 0,
+      freeDeliveryRadius: settingsData.freeDeliveryRadius !== '' && !isNaN(settingsData.freeDeliveryRadius) ? Number(settingsData.freeDeliveryRadius) : 0,
+      deliveryRadius: settingsData.deliveryRadius !== '' && !isNaN(settingsData.deliveryRadius) ? Number(settingsData.deliveryRadius) : 0,
+      deliveryCharge: settingsData.deliveryCharge !== '' && !isNaN(settingsData.deliveryCharge) ? Number(settingsData.deliveryCharge) : 0,
+      minOrderValue: settingsData.minOrderValue !== '' && !isNaN(settingsData.minOrderValue) ? Number(settingsData.minOrderValue) : 0,
+      freeDeliveryThreshold: settingsData.freeDeliveryThreshold !== '' && !isNaN(settingsData.freeDeliveryThreshold) ? Number(settingsData.freeDeliveryThreshold) : 0,
     }),
   });
   if (!response.ok) {
-    const err = await response.json();
+    const err = await response.json().catch(() => ({}));
     throw new Error(err.message || 'Failed to update store settings');
   }
   return await response.json();

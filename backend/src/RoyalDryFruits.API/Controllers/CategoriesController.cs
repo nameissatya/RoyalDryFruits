@@ -29,6 +29,7 @@ public class CategoriesController : ControllerBase
                 Slug = c.Slug,
                 Description = c.Description,
                 Icon = c.Icon,
+                ImageUrl = c.Products.Where(p => p.IsActive && !string.IsNullOrEmpty(p.ImageUrl)).Select(p => p.ImageUrl).FirstOrDefault() ?? string.Empty,
                 IsActive = c.IsActive,
                 ProductCount = c.Products.Count(p => p.IsActive)
             })

@@ -1,24 +1,20 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Search, ShoppingCart, User, X, Package, MessageSquare, ChevronRight, LogIn, LogOut } from 'lucide-react'
 import { useCart } from '../../context/CartContext'
 import { useAuth } from '../../context/AuthContext'
+import { fetchProductsApi } from '../../services/productApi'
 import MyOrdersModal from '../orders/MyOrdersModal'
+import { getWhatsAppLink } from '../../config/storeConfig'
 
-// Images for search dropdown
-import almondImg from '../../assets/images/prod-almond-main.jpg'
-import cashewsImg from '../../assets/images/rel-cashews.jpg'
-import pistachiosImg from '../../assets/images/rel-pistachios.jpg'
-import datesImg from '../../assets/images/cat-dates.jpg'
-import hamperArtisanal from '../../assets/images/hamper-artisanal.jpg'
-
-const SEARCH_ITEMS = [
-  { id: 'almonds', name: 'Premium California Almonds', category: 'Almonds', price: '₹650', image: almondImg },
-  { id: 'cashews', name: 'Whole White Cashews (W320)', category: 'Cashews', price: '₹720', image: cashewsImg },
-  { id: 'pistachios', name: 'Afghan Roasted Pistachios', category: 'Pistachios', price: '₹850', image: pistachiosImg },
-  { id: 'dates', name: 'Royal Medjool Dates', category: 'Dates', price: '₹490', image: datesImg },
-  { id: 'hamper', name: 'Artisanal Wooden Hamper', category: 'Hampers', price: '₹2,499', image: hamperArtisanal },
-]
+function formatPrice(amount) {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount)
+}
 
 const navLinks = [
   { label: 'Home', href: '/' },
@@ -32,10 +28,23 @@ export default function Header() {
   const { user, isLoggedIn, logout, openAuthModal } = useAuth()
   const navigate = useNavigate()
 
+  const [liveProducts, setLiveProducts] = useState([])
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isOrdersModalOpen, setIsOrdersModalOpen] = useState(false)
+
+  useEffect(() => {
+    let isMounted = true
+    async function load() {
+      const prods = await fetchProductsApi()
+      if (isMounted) {
+        setLiveProducts(prods || [])
+      }
+    }
+    load()
+    return () => { isMounted = false }
+  }, [])
 
   const isActive = (href) => {
     if (href === '/') return pathname === '/'
@@ -43,16 +52,16 @@ export default function Header() {
   }
 
   const filteredResults = searchQuery.trim()
-    ? SEARCH_ITEMS.filter(item =>
+    ? liveProducts.filter(item =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.category.toLowerCase().includes(searchQuery.toLowerCase())
     )
-    : SEARCH_ITEMS
+    : liveProducts.slice(0, 6)
 
   const handleSelectProduct = (product) => {
     setIsSearchOpen(false)
     setSearchQuery('')
-    navigate(`/product/${product.id}`)
+    navigate(`/product/${product.slug || product.id}`)
   }
 
   return (
@@ -179,7 +188,7 @@ export default function Header() {
                       )}
 
                       <a
-                        href="https://wa.me/919014060329?text=Hi%20Royal%20Dry%20Fruits,%20I%20have%20a%20question"
+                        href={getWhatsAppLink('Hi Royal Dry Fruits, I have a question')}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => setIsProfileOpen(false)}
@@ -257,7 +266,7 @@ export default function Header() {
                 filteredResults.map((item) => (
                   <div
                     key={item.id}
-                    onClick={handleSelectProduct}
+                    onClick={() => handleSelectProduct(item)}
                     className="flex items-center justify-between p-3 rounded-xl hover:bg-surface-container-low cursor-pointer transition-colors"
                   >
                     <div className="flex items-center gap-4">
@@ -267,7 +276,7 @@ export default function Header() {
                         <span className="text-xs text-on-surface-variant">{item.category}</span>
                       </div>
                     </div>
-                    <span className="font-headline text-label-md text-primary font-bold">{item.price}</span>
+                    <span className="font-headline text-label-md text-primary font-bold">{formatPrice(item.price)}</span>
                   </div>
                 ))
               )}

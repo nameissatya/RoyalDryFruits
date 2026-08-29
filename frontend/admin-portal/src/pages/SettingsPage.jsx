@@ -13,15 +13,11 @@ export default function SettingsPage() {
     email: '',
     latitude: '',
     longitude: '',
+    freeDeliveryRadius: '',
     deliveryRadius: '',
     deliveryCharge: '',
     minOrderValue: '',
     freeDeliveryThreshold: '',
-    adminName: '',
-    loginEmail: '',
-    whatsappAlerts: false,
-    orderAlerts: true,
-    stockAlerts: true,
   });
 
   // Synchronize form data when settings are loaded from backend
@@ -34,15 +30,11 @@ export default function SettingsPage() {
         email: settings.email || '',
         latitude: settings.latitude ?? settings.lat ?? '',
         longitude: settings.longitude ?? settings.lng ?? '',
+        freeDeliveryRadius: settings.freeDeliveryRadius ?? '',
         deliveryRadius: settings.deliveryRadius ?? settings.codRadius ?? '',
         deliveryCharge: settings.deliveryCharge ?? '',
         minOrderValue: settings.minOrderValue ?? '',
         freeDeliveryThreshold: settings.freeDeliveryThreshold ?? '',
-        adminName: settings.adminName || '',
-        loginEmail: settings.loginEmail || '',
-        whatsappAlerts: Boolean(settings.whatsappAlerts),
-        orderAlerts: settings.orderAlerts !== false,
-        stockAlerts: settings.stockAlerts !== false,
       });
     }
   }, [settings]);
@@ -53,6 +45,7 @@ export default function SettingsPage() {
       ...formData,
       latitude: formData.latitude !== '' ? Number(formData.latitude) : 0,
       longitude: formData.longitude !== '' ? Number(formData.longitude) : 0,
+      freeDeliveryRadius: formData.freeDeliveryRadius !== '' ? Number(formData.freeDeliveryRadius) : 0,
       deliveryRadius: formData.deliveryRadius !== '' ? Number(formData.deliveryRadius) : 0,
       deliveryCharge: formData.deliveryCharge !== '' ? Number(formData.deliveryCharge) : 0,
       minOrderValue: formData.minOrderValue !== '' ? Number(formData.minOrderValue) : 0,
@@ -129,15 +122,15 @@ export default function SettingsPage() {
           </div>
 
           <div className="pt-6 border-t border-surface-variant">
-            <h4 className="font-semibold text-on-surface mb-1">Store Coordinates (Optional)</h4>
-            <p className="text-outline text-[11px] mb-4">Used for precise delivery radius calculations.</p>
+            <h4 className="font-semibold text-on-surface mb-1">Store GPS Coordinates (Optional)</h4>
+            <p className="text-outline text-[11px] mb-4">Used for calculating live delivery distance from your shop.</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-on-surface-variant font-medium mb-1">Latitude</label>
                 <input
                   type="number"
                   step="any"
-                  placeholder="e.g. 17.3850"
+                  placeholder="e.g. 16.8524"
                   value={formData.latitude}
                   onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
                   className="w-full bg-surface border border-surface-variant rounded-lg px-4 py-2 text-on-surface focus:outline-none focus:border-primary-container"
@@ -148,7 +141,7 @@ export default function SettingsPage() {
                 <input
                   type="number"
                   step="any"
-                  placeholder="e.g. 78.4867"
+                  placeholder="e.g. 81.6749"
                   value={formData.longitude}
                   onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
                   className="w-full bg-surface border border-surface-variant rounded-lg px-4 py-2 text-on-surface focus:outline-none focus:border-primary-container"
@@ -165,16 +158,32 @@ export default function SettingsPage() {
               <span className="material-symbols-outlined text-secondary text-xl">local_shipping</span>
               <span>Delivery & Pricing Settings</span>
             </h3>
-            <p className="text-on-surface-variant text-xs mt-1">Set up delivery rules, thresholds, and fees for customer orders.</p>
+            <p className="text-on-surface-variant text-xs mt-1">Set up delivery rules, free delivery radius, and service ranges.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block font-semibold text-on-surface mb-2">COD Service Radius (km)</label>
+              <label className="block font-semibold text-on-surface mb-1">Free Delivery Radius (km)</label>
+              <p className="text-outline text-[11px] mb-2">Customers within this radius get 100% Free Delivery.</p>
               <div className="relative">
                 <input
                   type="number"
                   placeholder="e.g. 10"
+                  value={formData.freeDeliveryRadius}
+                  onChange={(e) => setFormData({ ...formData, freeDeliveryRadius: e.target.value })}
+                  className="w-full bg-surface border border-surface-variant rounded-lg pl-4 pr-12 py-2 text-on-surface focus:outline-none focus:border-primary-container"
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-semibold">km</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-semibold text-on-surface mb-1">Max Local Service Range (km)</label>
+              <p className="text-outline text-[11px] mb-2">Direct COD range. (Beyond this directs to WhatsApp Courier).</p>
+              <div className="relative">
+                <input
+                  type="number"
+                  placeholder="e.g. 25"
                   value={formData.deliveryRadius}
                   onChange={(e) => setFormData({ ...formData, deliveryRadius: e.target.value })}
                   className="w-full bg-surface border border-surface-variant rounded-lg pl-4 pr-12 py-2 text-on-surface focus:outline-none focus:border-primary-container"
@@ -182,8 +191,10 @@ export default function SettingsPage() {
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-semibold">km</span>
               </div>
             </div>
+
             <div>
-              <label className="block font-semibold text-on-surface mb-2">Standard Delivery Charge (₹)</label>
+              <label className="block font-semibold text-on-surface mb-1">Standard Delivery Charge (₹)</label>
+              <p className="text-outline text-[11px] mb-2">Fee charged between Free Radius and Max Service Range.</p>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">₹</span>
                 <input
@@ -195,28 +206,32 @@ export default function SettingsPage() {
                 />
               </div>
             </div>
+
             <div>
-              <label className="block font-semibold text-on-surface mb-2">Minimum Order Value (₹)</label>
+              <label className="block font-semibold text-on-surface mb-1">Free Delivery Cart Total (₹)</label>
+              <p className="text-outline text-[11px] mb-2">Orders above this amount get Free Delivery regardless of distance.</p>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">₹</span>
                 <input
                   type="number"
-                  placeholder="e.g. 500"
-                  value={formData.minOrderValue}
-                  onChange={(e) => setFormData({ ...formData, minOrderValue: e.target.value })}
+                  placeholder="e.g. 999"
+                  value={formData.freeDeliveryThreshold}
+                  onChange={(e) => setFormData({ ...formData, freeDeliveryThreshold: e.target.value })}
                   className="w-full bg-surface border border-surface-variant rounded-lg pl-8 pr-4 py-2 text-on-surface focus:outline-none focus:border-primary-container"
                 />
               </div>
             </div>
-            <div>
-              <label className="block font-semibold text-on-surface mb-2">Free Delivery Threshold (₹)</label>
-              <div className="relative">
+
+            <div className="md:col-span-2">
+              <label className="block font-semibold text-on-surface mb-1">Minimum Order Value (₹)</label>
+              <p className="text-outline text-[11px] mb-2">Minimum cart subtotal required to place an order.</p>
+              <div className="relative max-w-md">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">₹</span>
                 <input
                   type="number"
-                  placeholder="e.g. 1500"
-                  value={formData.freeDeliveryThreshold}
-                  onChange={(e) => setFormData({ ...formData, freeDeliveryThreshold: e.target.value })}
+                  placeholder="e.g. 200"
+                  value={formData.minOrderValue}
+                  onChange={(e) => setFormData({ ...formData, minOrderValue: e.target.value })}
                   className="w-full bg-surface border border-surface-variant rounded-lg pl-8 pr-4 py-2 text-on-surface focus:outline-none focus:border-primary-container"
                 />
               </div>
@@ -224,49 +239,12 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* 2-Column Grid for Account & Notification Settings */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-lg">
-          {/* Account Settings */}
-          <section className="bg-surface-container-lowest rounded-xl border border-surface-variant p-md shadow-sm space-y-md">
-            <div className="border-b border-surface-variant pb-4">
-              <h3 className="text-lg font-bold text-on-surface flex items-center space-x-2">
-                <span className="material-symbols-outlined text-secondary text-xl">person</span>
-                <span>Account Profile</span>
-              </h3>
-              <p className="text-on-surface-variant text-xs mt-1">Manage admin account details.</p>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block font-semibold text-on-surface mb-2">Admin Name</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Shop Owner / Manager"
-                  value={formData.adminName}
-                  onChange={(e) => setFormData({ ...formData, adminName: e.target.value })}
-                  className="w-full bg-surface border border-surface-variant rounded-lg px-4 py-2 text-on-surface focus:outline-none focus:border-primary-container"
-                />
-              </div>
-              <div>
-                <label className="block font-semibold text-on-surface mb-2">Admin Login Email</label>
-                <input
-                  type="email"
-                  placeholder="admin@royaldryfruits.com"
-                  value={formData.loginEmail}
-                  onChange={(e) => setFormData({ ...formData, loginEmail: e.target.value })}
-                  className="w-full bg-surface border border-surface-variant rounded-lg px-4 py-2 text-on-surface focus:outline-none focus:border-primary-container"
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Notification Settings (Coming Soon) */}
-          <ComingSoon
-            title="Notifications & Alerts"
-            icon="notifications_active"
-            description="Automated WhatsApp order alerts, SMS notifications, and inventory triggers are coming soon."
-          />
-        </div>
+        {/* Notification Settings (Coming Soon) */}
+        <ComingSoon
+          title="Notifications & Alerts"
+          icon="notifications_active"
+          description="Automated WhatsApp order alerts, SMS notifications, and inventory triggers are coming soon."
+        />
 
         {/* Save Action */}
         <div className="flex justify-end pt-2">

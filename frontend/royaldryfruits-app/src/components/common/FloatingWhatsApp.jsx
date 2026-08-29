@@ -1,17 +1,14 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
 import WhatsAppIcon from './WhatsAppIcon'
+import { getWhatsAppLink } from '../../config/storeConfig'
 
 export default function FloatingWhatsApp() {
   const [isOpen, setIsOpen] = useState(false)
 
-  const whatsappNumber = '919014060329' // Demo Store WhatsApp Number
-  const defaultMessage = encodeURIComponent(
-    'Hi Royal Dry Fruits! I would like to place an order or inquire about dry fruit hampers.'
-  )
-
   const handleOpenWhatsApp = () => {
-    window.open(`https://wa.me/${whatsappNumber}?text=${defaultMessage}`, '_blank')
+    const link = getWhatsAppLink('Hi Royal Dry Fruits! I would like to place an order or inquire about dry fruit hampers.')
+    window.open(link, '_blank')
   }
 
   return (

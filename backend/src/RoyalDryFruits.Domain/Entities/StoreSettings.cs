@@ -9,6 +9,8 @@ public class StoreSettings
     public string Email { get; set; } = string.Empty;
     public double Latitude { get; set; } = 0;
     public double Longitude { get; set; } = 0;
+    public double FreeDeliveryRadius { get; set; } = 0;
+    public double DeliveryRadius { get; set; } = 0;
     public decimal DeliveryCharge { get; set; } = 0;
     public decimal MinOrderValue { get; set; } = 0;
     public decimal FreeDeliveryThreshold { get; set; } = 0;

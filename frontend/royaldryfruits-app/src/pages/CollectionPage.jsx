@@ -1,16 +1,8 @@
 import { useState, useMemo, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { CheckCircle2, SearchX, Plus, Star, Loader2 } from 'lucide-react'
 import { useCart } from '../context/CartContext'
-import { fetchProductsApi } from '../services/productApi'
-
-const CATEGORIES = [
-  'All',
-  'Nuts & Almonds',
-  'Cashews & Pistachios',
-  'Dried Fruits & Dates',
-  'Gift Hampers',
-]
+import { fetchProductsApi, fetchCategoriesApi } from '../services/productApi'
 
 function formatPrice(amount) {
   return new Intl.NumberFormat('en-IN', {
@@ -22,25 +14,49 @@ function formatPrice(amount) {
 }
 
 export default function CollectionPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const categoryParam = searchParams.get('category') || 'All'
+
   const { addItem } = useCart()
   const [productsList, setProductsList] = useState([])
+  const [categoriesList, setCategoriesList] = useState([])
   const [loading, setLoading] = useState(true)
-  const [selectedCategory, setSelectedCategory] = useState('All')
+  const [selectedCategory, setSelectedCategory] = useState(categoryParam)
   const [toastMessage, setToastMessage] = useState('')
 
   useEffect(() => {
+    if (categoryParam) {
+      setSelectedCategory(categoryParam)
+    }
+  }, [categoryParam])
+
+  useEffect(() => {
     let isMounted = true
-    async function loadProducts() {
+    async function loadData() {
       setLoading(true)
-      const data = await fetchProductsApi()
+      const [prods, cats] = await Promise.all([
+        fetchProductsApi(),
+        fetchCategoriesApi()
+      ])
       if (isMounted) {
-        setProductsList(data)
+        setProductsList(prods || [])
+        setCategoriesList(cats || [])
         setLoading(false)
       }
     }
-    loadProducts()
+    loadData()
     return () => { isMounted = false }
   }, [])
+
+  const handleSelectCategory = (catName) => {
+    setSelectedCategory(catName)
+    if (catName === 'All') {
+      searchParams.delete('category')
+      setSearchParams(searchParams)
+    } else {
+      setSearchParams({ category: catName })
+    }
+  }
 
   const handleAddToCart = (product, e) => {
     e.preventDefault()
@@ -58,9 +74,13 @@ export default function CollectionPage() {
   }
 
   const filteredProducts = useMemo(() => {
-    if (selectedCategory === 'All') return productsList
-    return productsList.filter((p) => p.category === selectedCategory)
+    if (!selectedCategory || selectedCategory === 'All') return productsList
+    return productsList.filter((p) => 
+      p.category?.toLowerCase() === selectedCategory.toLowerCase()
+    )
   }, [selectedCategory, productsList])
+
+  const allCategoryTabs = ['All', ...categoriesList.map(c => c.name)]
 
   return (
     <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-8 md:py-12">
@@ -92,14 +112,14 @@ export default function CollectionPage() {
 
       {/* Filters Bar */}
       <div className="flex items-center justify-start mb-8">
-        {/* Category Tabs */}
+        {/* Dynamic Category Tabs */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-          {CATEGORIES.map((cat) => (
+          {allCategoryTabs.map((cat) => (
             <button
               key={cat}
-              onClick={() => setSelectedCategory(cat)}
+              onClick={() => handleSelectCategory(cat)}
               className={`px-5 py-2.5 rounded-full font-label text-label-md whitespace-nowrap transition-all ${
-                selectedCategory === cat
+                selectedCategory.toLowerCase() === cat.toLowerCase()
                   ? 'bg-primary text-on-primary shadow-sm'
                   : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high'
               }`}

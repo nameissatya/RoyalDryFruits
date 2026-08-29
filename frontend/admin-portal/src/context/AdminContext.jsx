@@ -237,6 +237,7 @@ export function AdminProvider({ children }) {
           email: data.email || '',
           latitude: data.latitude ?? '',
           longitude: data.longitude ?? '',
+          freeDeliveryRadius: data.freeDeliveryRadius ?? '',
           deliveryRadius: data.deliveryRadius ?? '',
           deliveryCharge: data.deliveryCharge ?? '',
           minOrderValue: data.minOrderValue ?? '',

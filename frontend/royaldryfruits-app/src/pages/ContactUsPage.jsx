@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Phone, Mail, MapPin, MessageSquare, Send, CheckCircle2, Clock } from 'lucide-react'
+import { getWhatsAppLink, formatDisplayPhone, STORE_PHONE } from '../config/storeConfig'
 
 export default function ContactUsPage() {
   const [formData, setFormData] = useState({
@@ -57,8 +58,10 @@ export default function ContactUsPage() {
               </div>
               <div>
                 <h4 className="font-body text-body-md font-bold text-primary">Customer Hotline</h4>
-                <p className="font-headline text-headline-xs text-secondary font-bold mt-0.5">+91 98765 43210</p>
-                <p className="font-body text-body-xs text-on-surface-variant">Mon - Sat: 8:00 AM - 10:00 PM</p>
+                <a href={`tel:${STORE_PHONE}`} className="font-headline text-headline-xs text-secondary font-bold mt-0.5 hover:underline block">
+                  {formatDisplayPhone(STORE_PHONE)}
+                </a>
+                <p className="font-body text-body-xs text-on-surface-variant">Mon - Sun: 8:00 AM - 10:00 PM</p>
               </div>
             </div>
 
@@ -71,7 +74,7 @@ export default function ContactUsPage() {
                 <h4 className="font-body text-body-md font-bold text-primary">WhatsApp Support</h4>
                 <p className="font-body text-body-xs text-on-surface-variant mt-0.5">Instant resolution & order tracking assistance</p>
                 <a
-                  href="https://wa.me/919014060329?text=Hi%20Royal%20Dry%20Fruits,%20I%20have%20an%20inquiry"
+                  href={getWhatsAppLink('Hi Royal Dry Fruits, I have an inquiry')}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-block mt-2 font-label text-xs font-bold text-emerald-700 hover:underline"

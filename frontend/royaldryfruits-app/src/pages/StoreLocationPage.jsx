@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ArrowLeft, MapPin, Clock, Phone, Navigation, Sparkles, ShieldCheck, ShoppingBag } from 'lucide-react'
 import WhatsAppIcon from '../components/common/WhatsAppIcon'
+import { getWhatsAppLink, formatDisplayPhone, STORE_PHONE } from '../config/storeConfig'
 import mapImg from '../assets/images/checkout-map.jpg'
 
 export default function StoreLocationPage() {
@@ -25,11 +26,11 @@ export default function StoreLocationPage() {
           Visit Our Store
         </h1>
         <p className="font-body text-body-md text-on-surface-variant">
-          Experience the finest California Almonds, Whole Cashews, Medjool Dates, and Luxury Hampers in person at our Pippara store.
+          Experience our full collection of premium dry fruits, artisanal gift hampers, and gourmet sweets in person.
         </p>
       </div>
 
-      {/* Store Info Cards Grid */}
+      {/* Store Information Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
         {/* Address Card */}
         <div className="bg-surface-container rounded-2xl p-6 border border-outline-variant/30 shadow-sm flex flex-col justify-between">
@@ -40,24 +41,24 @@ export default function StoreLocationPage() {
             <h3 className="font-headline text-headline-sm text-primary font-bold mb-2">
               Store Address
             </h3>
-            <p className="font-body text-body-md text-on-surface-variant leading-relaxed">
-              Royal Dry Fruits,<br />
-              Pippara,<br />
-              Andhra Pradesh 534197
+            <p className="font-body text-body-md text-on-surface-variant leading-relaxed mb-4">
+              Royal Dry Fruits Experience Store,<br />
+              Main Road, Pippara,<br />
+              Andhra Pradesh, India
             </p>
           </div>
           <a
-            href="https://maps.app.goo.gl/H6H4vJbK8ak8qDaW9"
+            href="https://maps.google.com/?q=Pippara,Andhra+Pradesh"
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-6 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-primary text-on-primary font-label text-label-md font-bold hover:bg-secondary transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 font-label text-label-md text-secondary font-bold hover:underline"
           >
             <Navigation className="w-4 h-4" />
-            Get Directions
+            Get Directions →
           </a>
         </div>
 
-        {/* Timings Card */}
+        {/* Operating Hours Card */}
         <div className="bg-surface-container rounded-2xl p-6 border border-outline-variant/30 shadow-sm flex flex-col justify-between">
           <div>
             <div className="w-12 h-12 rounded-xl bg-secondary-container/40 text-secondary flex items-center justify-center font-bold mb-4">
@@ -66,20 +67,20 @@ export default function StoreLocationPage() {
             <h3 className="font-headline text-headline-sm text-primary font-bold mb-2">
               Opening Hours
             </h3>
-            <div className="space-y-2 font-body text-body-md text-on-surface-variant">
-              <div className="flex justify-between pb-2 border-b border-outline-variant/20">
-                <span>Monday - Saturday:</span>
-                <strong className="text-primary font-semibold">8:00 AM - 10:00 PM</strong>
+            <div className="space-y-2 text-on-surface-variant font-body text-body-md">
+              <div className="flex justify-between">
+                <span>Monday – Saturday:</span>
+                <span className="font-semibold text-primary">8:00 AM – 10:00 PM</span>
               </div>
-              <div className="flex justify-between pb-2 border-b border-outline-variant/20">
-                <span>Sunday & Holidays:</span>
-                <strong className="text-primary font-semibold">9:00 AM - 9:30 PM</strong>
+              <div className="flex justify-between">
+                <span>Sunday:</span>
+                <span className="font-semibold text-primary">8:00 AM – 10:00 PM</span>
               </div>
-              <p className="text-xs text-emerald-700 font-semibold flex items-center gap-1 pt-1">
-                <ShieldCheck className="w-4 h-4" />
-                2-Hour Express Local Delivery Active
-              </p>
             </div>
+          </div>
+          <div className="mt-4 flex items-center gap-2 text-emerald-700 font-label text-xs font-bold bg-emerald-50 py-1.5 px-3 rounded-full w-fit">
+            <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+            Open 7 Days a Week
           </div>
         </div>
 
@@ -95,16 +96,16 @@ export default function StoreLocationPage() {
             <p className="font-body text-body-md text-on-surface-variant mb-4">
               Call us directly or chat on WhatsApp for bulk order inquiries, corporate gifts, and custom hampers.
             </p>
-            <p className="font-headline text-headline-sm text-secondary font-bold mb-1">
-              +91 9014060329
-            </p>
+            <a href={`tel:${STORE_PHONE}`} className="font-headline text-headline-sm text-secondary font-bold mb-1 hover:underline block">
+              {formatDisplayPhone(STORE_PHONE)}
+            </a>
             <p className="font-body text-body-xs text-on-surface-variant">
               Email: contact@royaldryfruits.com
             </p>
           </div>
 
           <a
-            href="https://wa.me/919014060329?text=Hi%20Royal%20Dry%20Fruits,%20I%20want%20to%20visit%20your%20store"
+            href={getWhatsAppLink('Hi Royal Dry Fruits, I want to visit your store')}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-6 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 font-label text-label-md font-bold hover:bg-emerald-100 transition-colors cursor-pointer"
