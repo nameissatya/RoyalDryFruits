@@ -8,25 +8,25 @@ import { resolveImageUrl } from '../services/apiConfig';
 const AdminContext = createContext();
 
 const defaultSettings = {
-  storeName: 'Royal Dry Fruits',
+  storeName: '',
   phone: '',
   address: '',
   email: '',
-  deliveryRadius: 10,
-  deliveryCharge: 50,
-  minOrderValue: 500,
-  freeDeliveryThreshold: 1500,
+  latitude: '',
+  longitude: '',
+  deliveryRadius: '',
+  deliveryCharge: '',
+  minOrderValue: '',
+  freeDeliveryThreshold: '',
+  adminName: '',
+  loginEmail: '',
+  whatsappAlerts: false,
+  orderAlerts: true,
+  stockAlerts: true,
 };
 
-const defaultCategories = [
-  { id: 'cat-1', name: 'Nuts & Almonds', description: 'Premium fresh nuts and almond varieties', icon: 'spa', count: 0, isActive: true },
-  { id: 'cat-2', name: 'Cashews & Pistachios', description: 'Whole cashews and crisp Afghan pistachios', icon: 'auto_awesome', count: 0, isActive: true },
-  { id: 'cat-3', name: 'Dried Fruits & Dates', description: 'Fresh Medjool dates, raisins, figs and berries', icon: 'light_mode', count: 0, isActive: true },
-  { id: 'cat-4', name: 'Gift Hampers', description: 'Luxury festive and corporate gift hampers', icon: 'redeem', count: 0, isActive: true },
-];
-
 export function AdminProvider({ children }) {
-  const [categories, setCategories] = useState(defaultCategories);
+  const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [customers, setCustomers] = useState([]);
@@ -38,9 +38,11 @@ export function AdminProvider({ children }) {
   const [isOrdersLoading, setIsOrdersLoading] = useState(false);
   const [isSettingsLoading, setIsSettingsLoading] = useState(false);
 
-  const showToast = (msg) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
+  const showToast = (message) => {
+    setToastMessage(message);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 4000);
   };
 
   // Load categories from API
@@ -48,7 +50,7 @@ export function AdminProvider({ children }) {
     setIsCategoriesLoading(true);
     try {
       const data = await fetchCategoriesApi();
-      if (Array.isArray(data) && data.length > 0) {
+      if (Array.isArray(data)) {
         setCategories(data.map(c => {
           const iconMap = {
             'gift': 'redeem',
@@ -69,11 +71,11 @@ export function AdminProvider({ children }) {
           };
         }));
       } else {
-        setCategories(defaultCategories);
+        setCategories([]);
       }
     } catch (err) {
-      console.warn('API connection offline for categories, using local data fallback.', err);
-      setCategories(defaultCategories);
+      console.warn('API connection error for categories:', err);
+      setCategories([]);
     } finally {
       setIsCategoriesLoading(false);
     }
@@ -112,18 +114,23 @@ export function AdminProvider({ children }) {
 
   // Helper to format order status string safely
   const parseOrderStatus = (status, statusLabel) => {
-    if (statusLabel && typeof statusLabel === 'string') return statusLabel;
     if (typeof status === 'number') {
       const statusMap = {
         0: 'Pending',
         1: 'Confirmed',
-        2: 'Out For Delivery',
+        2: 'Out for Delivery',
         3: 'Delivered',
         4: 'Cancelled',
       };
       return statusMap[status] || 'Pending';
     }
-    return String(status || 'Pending');
+    if (statusLabel && typeof statusLabel === 'string') {
+      if (statusLabel === 'OutForDelivery') return 'Out for Delivery';
+      return statusLabel;
+    }
+    const s = String(status || 'Pending');
+    if (s === 'OutForDelivery') return 'Out for Delivery';
+    return s;
   };
 
   // Helper to derive customer profiles dynamically from orders
@@ -222,21 +229,22 @@ export function AdminProvider({ children }) {
     try {
       const data = await fetchSettingsApi();
       if (data && data.id) {
-        setSettings({
-          storeName: data.storeName || 'Royal Dry Fruits',
-          phone: data.phone || '+91 98765 43210',
-          address: data.address || '123 Main Market, Mumbai',
-          email: data.email || 'contact@royaldryfruits.com',
-          latitude: data.latitude || 18.9220,
-          longitude: data.longitude || 72.8347,
-          deliveryRadius: 10,
-          deliveryCharge: data.deliveryCharge || 50,
-          minOrderValue: data.minOrderValue || 500,
-          freeDeliveryThreshold: data.freeDeliveryThreshold || 1500,
-        });
+        setSettings(prev => ({
+          ...prev,
+          storeName: data.storeName || '',
+          phone: data.phone || '',
+          address: data.address || '',
+          email: data.email || '',
+          latitude: data.latitude ?? '',
+          longitude: data.longitude ?? '',
+          deliveryRadius: data.deliveryRadius ?? '',
+          deliveryCharge: data.deliveryCharge ?? '',
+          minOrderValue: data.minOrderValue ?? '',
+          freeDeliveryThreshold: data.freeDeliveryThreshold ?? '',
+        }));
       }
     } catch (err) {
-      console.warn('API connection offline for settings, using local data fallback.', err);
+      console.warn('API connection offline for settings:', err);
     } finally {
       setIsSettingsLoading(false);
     }
@@ -361,11 +369,17 @@ export function AdminProvider({ children }) {
 
     try {
       await updateOrderStatusApi(targetGuid, newStatus, cancellationReason);
-      setOrders(prev => prev.map(o => (o.id === orderId || o.rawId === orderId) ? { ...o, status: newStatus, cancellationReason: cancellationReason } : o));
-      showToast(`Order ${orderId} updated to ${newStatus} in database.`);
+      setOrders(prev => prev.map(o => (o.id === orderId || o.rawId === orderId) 
+        ? { ...o, status: newStatus, cancellationReason: newStatus === 'Cancelled' ? cancellationReason : '' } 
+        : o
+      ));
+      showToast(`Order ${orderId} updated to ${newStatus}`);
     } catch (err) {
       console.warn('API error, updating order status locally fallback:', err);
-      setOrders(prev => prev.map(o => (o.id === orderId || o.rawId === orderId) ? { ...o, status: newStatus, cancellationReason: cancellationReason } : o));
+      setOrders(prev => prev.map(o => (o.id === orderId || o.rawId === orderId) 
+        ? { ...o, status: newStatus, cancellationReason: newStatus === 'Cancelled' ? cancellationReason : '' } 
+        : o
+      ));
       showToast(`Order ${orderId} updated to ${newStatus}`);
     }
   };
@@ -381,6 +395,15 @@ export function AdminProvider({ children }) {
       setSettings(merged);
       showToast('Settings saved successfully.');
     }
+  };
+
+  const refreshAllData = async () => {
+    await Promise.allSettled([
+      loadCategories(),
+      loadProducts(),
+      loadOrders(),
+      loadSettings(),
+    ]);
   };
 
   return (
@@ -399,6 +422,7 @@ export function AdminProvider({ children }) {
         settings,
         isSettingsLoading,
         loadSettings,
+        refreshAllData,
         toastMessage,
         showToast,
         addCategory,

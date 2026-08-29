@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Package, ShoppingBag, MapPin, Calendar, MessageSquare, CheckCircle, Clock, Truck, XCircle, ShieldCheck, Lock } from 'lucide-react'
+import { ArrowLeft, Package, MapPin, Calendar, MessageSquare, CheckCircle, Clock, Truck, XCircle, ShieldCheck, Lock } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { fetchOrdersByPhoneApi, fetchAllOrdersApi } from '../services/orderApi'
 import { resolveImageUrl } from '../services/productApi'
@@ -269,15 +269,56 @@ export default function MyOrdersPage() {
                 </div>
               </div>
 
+              {/* Order Stepper Tracker */}
+              {!String(ord.statusLabel || '').toLowerCase().includes('cancel') && (
+                <div className="px-6 py-4 bg-surface-bright border-b border-outline-variant/15">
+                  <div className="grid grid-cols-4 gap-2 text-center relative max-w-2xl mx-auto">
+                    {[
+                      { key: 'placed', label: 'Order Placed', icon: Clock },
+                      { key: 'confirmed', label: 'Confirmed', icon: CheckCircle },
+                      { key: 'dispatched', label: 'Dispatched', icon: Truck },
+                      { key: 'delivered', label: 'Delivered', icon: ShieldCheck },
+                    ].map((step, sIdx) => {
+                      const s = String(ord.statusLabel || '').toLowerCase().replace(/\s+/g, '');
+                      let currentStepIdx = 0;
+                      if (s.includes('delivered')) currentStepIdx = 3;
+                      else if (s.includes('outfordelivery') || s.includes('dispatched') || s.includes('shipped')) currentStepIdx = 2;
+                      else if (s.includes('confirmed')) currentStepIdx = 1;
+
+                      const isDone = currentStepIdx >= sIdx;
+                      const isCurrent = currentStepIdx === sIdx;
+                      const IconComp = step.icon;
+
+                      return (
+                        <div key={step.key} className="flex flex-col items-center">
+                          <div
+                            className={`w-7 h-7 rounded-full flex items-center justify-center mb-1 text-xs transition-all ${
+                              isDone
+                                ? 'bg-secondary text-on-secondary shadow-sm font-bold'
+                                : 'bg-surface-dim text-on-surface-variant/50 border border-outline-variant/30'
+                            } ${isCurrent ? 'ring-2 ring-secondary ring-offset-2' : ''}`}
+                          >
+                            <IconComp className="w-3.5 h-3.5" />
+                          </div>
+                          <span className={`text-[10px] md:text-xs font-semibold ${isDone ? 'text-primary font-bold' : 'text-on-surface-variant/60'}`}>
+                            {step.label}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Cancellation Reason Banner */}
               {String(ord.statusLabel || '').toLowerCase().includes('cancel') && (
                 <div className="mx-6 mt-4 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs">
                   <div className="flex items-center gap-2 font-bold text-rose-900 mb-1">
                     <XCircle className="w-4 h-4 text-rose-600" />
-                    <span>Order Cancelled by Store Admin</span>
+                    <span>Order Declined / Cancelled by Store Admin</span>
                   </div>
                   <p className="font-medium text-rose-700">
-                    Reason: {ord.cancellationReason || 'Cancelled by store management'}
+                    Reason: {ord.cancellationReason || 'Item out of stock or unserviceable location'}
                   </p>
                 </div>
               )}

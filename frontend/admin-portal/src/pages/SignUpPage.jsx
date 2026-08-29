@@ -5,7 +5,7 @@ import { useAdmin } from '../context/AdminContext';
 
 export default function SignUpPage() {
   const navigate = useNavigate();
-  const { showToast } = useAdmin();
+  const { showToast, refreshAllData } = useAdmin();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -22,6 +22,9 @@ export default function SignUpPage() {
     try {
       const result = await registerAdmin(formData.username, formData.email, formData.password);
       showToast(`Admin account registered for ${result.email}!`);
+      if (refreshAllData) {
+        refreshAllData();
+      }
       navigate('/');
     } catch (err) {
       setErrorMessage(err.message || 'Registration failed. Please check inputs.');
@@ -60,7 +63,7 @@ export default function SignUpPage() {
               <input
                 type="text"
                 required
-                placeholder="rajesh_admin"
+                placeholder="Enter username"
                 value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                 className="w-full pl-10 pr-4 py-2.5 bg-surface border border-outline-variant rounded-lg text-on-surface outline-none focus:border-primary"
@@ -77,7 +80,7 @@ export default function SignUpPage() {
               <input
                 type="email"
                 required
-                placeholder="rajesh@royaldryfruits.com"
+                placeholder="Enter work email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="w-full pl-10 pr-4 py-2.5 bg-surface border border-outline-variant rounded-lg text-on-surface outline-none focus:border-primary"
@@ -94,7 +97,7 @@ export default function SignUpPage() {
               <input
                 type="password"
                 required
-                placeholder="••••••••"
+                placeholder="Create a strong password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 className="w-full pl-10 pr-4 py-2.5 bg-surface border border-outline-variant rounded-lg text-on-surface outline-none focus:border-primary"

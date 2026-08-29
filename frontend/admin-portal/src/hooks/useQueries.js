@@ -188,16 +188,16 @@ export function useSettingsQuery() {
       const data = await fetchSettingsApi();
       if (!data || !data.id) return null;
       return {
-        storeName: data.storeName || 'Royal Dry Fruits',
-        phone: data.phone || '+91 98765 43210',
-        address: data.address || '123 Main Market, Mumbai',
-        email: data.email || 'contact@royaldryfruits.com',
-        latitude: data.latitude || 18.9220,
-        longitude: data.longitude || 72.8347,
-        deliveryRadius: 10,
-        deliveryCharge: data.deliveryCharge || 50,
-        minOrderValue: data.minOrderValue || 500,
-        freeDeliveryThreshold: data.freeDeliveryThreshold || 1500,
+        storeName: data.storeName || '',
+        phone: data.phone || '',
+        address: data.address || '',
+        email: data.email || '',
+        latitude: data.latitude ?? '',
+        longitude: data.longitude ?? '',
+        deliveryRadius: data.deliveryRadius ?? '',
+        deliveryCharge: data.deliveryCharge ?? '',
+        minOrderValue: data.minOrderValue ?? '',
+        freeDeliveryThreshold: data.freeDeliveryThreshold ?? '',
       };
     },
   });

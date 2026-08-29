@@ -31,6 +31,7 @@ public class OrderDto
     public string? CancellationReason { get; set; }
     public string PaymentMethod { get; set; } = "COD";
     public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 
     public List<OrderItemDto> Items { get; set; } = new();
 }

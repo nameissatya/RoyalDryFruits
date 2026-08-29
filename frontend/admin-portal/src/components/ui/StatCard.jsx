@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 /**
  * Reusable stat/metric card for dashboard summary rows.
@@ -10,6 +11,8 @@ import React from 'react';
  * @param {'success'|'error'|'muted'} [props.subtitleColor='muted'] - Subtitle text color
  * @param {string} props.icon - Material Symbols icon name
  * @param {'default'|'alert'} [props.variant='default'] - Card style variant
+ * @param {string} [props.to] - Optional route URL to navigate on click
+ * @param {Function} [props.onClick] - Optional click handler
  */
 export default function StatCard({
   title,
@@ -18,6 +21,8 @@ export default function StatCard({
   subtitleColor = 'muted',
   icon,
   variant = 'default',
+  to,
+  onClick,
 }) {
   const isAlert = variant === 'alert';
 
@@ -43,8 +48,8 @@ export default function StatCard({
     muted: 'text-on-surface-variant',
   };
 
-  return (
-    <div className={`${cardStyles} p-md rounded-xl card-shadow border flex flex-col justify-between`}>
+  const content = (
+    <>
       <div className="flex justify-between items-start mb-sm">
         <p className={`text-sm font-semibold ${titleStyles}`}>{title}</p>
         <span className={`material-symbols-outlined ${iconStyles} text-2xl`}>{icon}</span>
@@ -57,6 +62,30 @@ export default function StatCard({
           </p>
         )}
       </div>
+    </>
+  );
+
+  const hoverEffects = (to || onClick)
+    ? 'hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group'
+    : '';
+
+  if (to) {
+    return (
+      <Link
+        to={to}
+        className={`${cardStyles} ${hoverEffects} p-md rounded-xl card-shadow border flex flex-col justify-between block no-underline`}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <div
+      onClick={onClick}
+      className={`${cardStyles} ${hoverEffects} p-md rounded-xl card-shadow border flex flex-col justify-between`}
+    >
+      {content}
     </div>
   );
 }

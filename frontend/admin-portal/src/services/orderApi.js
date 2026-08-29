@@ -26,17 +26,17 @@ export async function fetchOrderByIdApi(id) {
 }
 
 export async function updateOrderStatusApi(id, status, cancellationReason = '') {
-  // Map string status e.g. "Confirmed", "Cancelled", "Out for Delivery", "Delivered" to backend OrderStatus enum integer/string
   let enumStatus = status;
   if (typeof status === 'string') {
-    if (status === 'Confirmed') enumStatus = 1;
-    else if (status === 'Out for Delivery' || status === 'OutForDelivery') enumStatus = 2;
-    else if (status === 'Delivered') enumStatus = 3;
-    else if (status === 'Cancelled' || status === 'Rejected') enumStatus = 4;
-    else if (status === 'Pending') enumStatus = 0;
+    const s = status.toLowerCase().replace(/\s+/g, '');
+    if (s === 'pending') enumStatus = 0;
+    else if (s === 'confirmed' || s === 'accept' || s === 'accepted') enumStatus = 1;
+    else if (s === 'outfordelivery' || s === 'dispatched' || s === 'dispatch' || s === 'shipped') enumStatus = 2;
+    else if (s === 'delivered') enumStatus = 3;
+    else if (s === 'cancelled' || s === 'decline' || s === 'declined' || s === 'rejected') enumStatus = 4;
   }
 
-  const response = await fetch(`${API_BASE_URL}/orders/${id}/status`, {
+  const response = await fetch(`${API_BASE_URL}/admin/AdminOrders/${id}/status`, {
     method: 'PUT',
     headers: getAuthHeaders(),
     body: JSON.stringify({
@@ -46,8 +46,19 @@ export async function updateOrderStatusApi(id, status, cancellationReason = '') 
   });
 
   if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.message || 'Failed to update order status');
+    const fbResponse = await fetch(`${API_BASE_URL}/orders/${id}/status`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        status: enumStatus,
+        cancellationReason: cancellationReason || '',
+      }),
+    });
+    if (!fbResponse.ok) {
+      const err = await fbResponse.json().catch(() => ({}));
+      throw new Error(err.message || 'Failed to update order status');
+    }
+    return await fbResponse.json();
   }
   return await response.json();
 }

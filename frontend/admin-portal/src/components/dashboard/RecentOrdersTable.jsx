@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Badge from '../ui/Badge';
 import EmptyState from '../ui/EmptyState';
-import { getStatusBadgeVariant } from '../../utils/statusUtils';
+import { getStatusBadgeVariant, getStatusIcon, formatStatusLabel } from '../../utils/statusUtils';
 
 /**
  * Dashboard Recent Orders table with empty state support.
@@ -17,7 +17,7 @@ export default function RecentOrdersTable({ orders, limit = 5 }) {
       <div className="flex items-center justify-between mb-md">
         <h3 className="text-lg font-bold text-on-surface">Recent Orders</h3>
         <Link to="/orders" className="text-xs font-semibold text-primary hover:underline">
-          View All
+          View All ({orders.length})
         </Link>
       </div>
 
@@ -37,6 +37,7 @@ export default function RecentOrdersTable({ orders, limit = 5 }) {
                 <th className="pb-3">Items</th>
                 <th className="pb-3">Total</th>
                 <th className="pb-3">Status</th>
+                <th className="pb-3 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-surface-container-high">
@@ -51,7 +52,23 @@ export default function RecentOrdersTable({ orders, limit = 5 }) {
                       : ord.total}
                   </td>
                   <td className="py-3">
-                    <Badge variant={getStatusBadgeVariant(ord.status)}>{ord.status}</Badge>
+                    <Badge variant={getStatusBadgeVariant(ord.status)}>
+                      <span className="flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[10px]">
+                          {getStatusIcon(ord.status)}
+                        </span>
+                        {formatStatusLabel(ord.status)}
+                      </span>
+                    </Badge>
+                  </td>
+                  <td className="py-3 text-right">
+                    <Link
+                      to="/orders"
+                      className="inline-flex items-center gap-1 text-primary hover:text-primary-dark font-semibold text-xs"
+                    >
+                      <span>Manage</span>
+                      <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                    </Link>
                   </td>
                 </tr>
               ))}

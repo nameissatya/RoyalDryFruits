@@ -1,0 +1,75 @@
+# ==========================================
+# Root .gitignore for RoyalDryFruits Project
+# ==========================================
+
+# ------------------------------------------
+# Node.js & Frontend (React / Vite)
+# ------------------------------------------
+**/node_modules/
+**/dist/
+**/build/
+**/out/
+.npm/
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+.vite/
+
+# Frontend Environment Variables & Logs
+**/.env.local
+**/.env.development.local
+**/.env.test.local
+**/.env.production.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ------------------------------------------
+# .NET / C# / ASP.NET Core
+# ------------------------------------------
+**/bin/
+**/obj/
+**/[Bb]in/
+**/[Oo]bj/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+*.userprefs
+*.dbmdl
+*.jfm
+
+# Visual Studio & Omnisharp
+.vs/
+.vscode/
+.idea/
+.ionide/
+*.DotSettings.user
+
+# EF Core / SQLite temp files
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# ------------------------------------------
+# OS Generated Files
+# ------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ------------------------------------------
+# Temporary / Scratch Files
+# ------------------------------------------
+*.tmp
+*.temp
+*.swp
+*.swo
+*~

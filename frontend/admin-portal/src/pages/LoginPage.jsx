@@ -5,9 +5,9 @@ import { useAdmin } from '../context/AdminContext';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { showToast } = useAdmin();
-  const [email, setEmail] = useState('admin@royaldryfruits.com');
-  const [password, setPassword] = useState('password123');
+  const { showToast, refreshAllData } = useAdmin();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -19,6 +19,9 @@ export default function LoginPage() {
     try {
       const result = await loginAdmin(email, password);
       showToast(`Welcome back, ${result.email}!`);
+      if (refreshAllData) {
+        refreshAllData();
+      }
       navigate('/');
     } catch (err) {
       setErrorMessage(err.message || 'Login failed. Please check your credentials.');
@@ -59,7 +62,7 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@royaldryfruits.com"
+                placeholder="Enter email or username"
                 className="w-full pl-10 pr-4 py-2.5 bg-surface border border-outline-variant rounded-lg text-on-surface outline-none focus:border-primary"
               />
             </div>
@@ -76,18 +79,17 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="Enter password"
                 className="w-full pl-10 pr-4 py-2.5 bg-surface border border-outline-variant rounded-lg text-on-surface outline-none focus:border-primary"
               />
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-[11px]">
+          <div className="flex items-center text-[11px]">
             <label className="flex items-center space-x-1.5 text-on-surface-variant cursor-pointer">
               <input type="checkbox" defaultChecked className="rounded text-primary focus:ring-primary" />
               <span>Remember session</span>
             </label>
-            <a href="#" className="font-semibold text-primary hover:underline">Forgot password?</a>
           </div>
 
           <button

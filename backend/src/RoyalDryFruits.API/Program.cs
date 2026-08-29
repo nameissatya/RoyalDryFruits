@@ -77,23 +77,30 @@ var app = builder.Build();
 // Global Production Exception Middleware
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
-// Automatically create database and tables if they don't exist
+// Automatically apply database migrations and tables safely without deleting data
 try
 {
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         
-        // Apply migrations if available, otherwise recreate schema
         try
         {
+            // Apply pending EF Core migrations
             db.Database.Migrate();
         }
-        catch
+        catch (Exception migrateEx)
         {
-            // If migrations fail (e.g., fresh Render DB), recreate from scratch
-            db.Database.EnsureDeleted();
-            db.Database.EnsureCreated();
+            Console.WriteLine($"Database migration notice: {migrateEx.Message}. Ensuring tables exist without destructive deletion.");
+            // EnsureCreated only creates tables if they don't exist; it NEVER deletes existing tables or data
+            try
+            {
+                db.Database.EnsureCreated();
+            }
+            catch (Exception ensureEx)
+            {
+                Console.WriteLine($"EnsureCreated notice: {ensureEx.Message}");
+            }
         }
         
         await DbInitializer.SeedAsync(db);

@@ -133,6 +133,7 @@ public class OrdersController : ControllerBase
             CancellationReason = o.CancellationReason,
             PaymentMethod = o.PaymentMethod,
             CreatedAt = o.CreatedAt,
+            UpdatedAt = o.UpdatedAt,
             Items = o.Items.Select(i => new OrderItemDto
             {
                 Id = i.Id,
@@ -172,6 +173,7 @@ public class OrdersController : ControllerBase
             CancellationReason = o.CancellationReason,
             PaymentMethod = o.PaymentMethod,
             CreatedAt = o.CreatedAt,
+            UpdatedAt = o.UpdatedAt,
             Items = o.Items.Select(i => new OrderItemDto
             {
                 Id = i.Id,
@@ -209,6 +211,7 @@ public class OrdersController : ControllerBase
             CancellationReason = o.CancellationReason,
             PaymentMethod = o.PaymentMethod,
             CreatedAt = o.CreatedAt,
+            UpdatedAt = o.UpdatedAt,
             Items = o.Items.Select(i => new OrderItemDto
             {
                 Id = i.Id,
@@ -255,6 +258,7 @@ public class OrdersController : ControllerBase
             CancellationReason = o.CancellationReason,
             PaymentMethod = o.PaymentMethod,
             CreatedAt = o.CreatedAt,
+            UpdatedAt = o.UpdatedAt,
             Items = o.Items.Select(i => new OrderItemDto
             {
                 Id = i.Id,
@@ -277,13 +281,19 @@ public class OrdersController : ControllerBase
         if (order == null) return NotFound(new { message = "Order not found" });
 
         order.Status = req.Status;
-        if (!string.IsNullOrWhiteSpace(req.CancellationReason))
+        if (req.Status == OrderStatus.Cancelled)
         {
-            order.CancellationReason = req.CancellationReason.Trim();
+            order.CancellationReason = string.IsNullOrWhiteSpace(req.CancellationReason)
+                ? "Declined by store administrator"
+                : req.CancellationReason.Trim();
+        }
+        else
+        {
+            order.CancellationReason = null;
         }
         order.UpdatedAt = DateTime.UtcNow;
 
         await _db.SaveChangesAsync();
-        return Ok(new { message = "Order status updated successfully", status = order.Status, cancellationReason = order.CancellationReason });
+        return Ok(new { message = "Order status updated successfully", status = order.Status.ToString(), cancellationReason = order.CancellationReason });
     }
 }

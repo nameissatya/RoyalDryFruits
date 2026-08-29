@@ -190,11 +190,10 @@ export default function ProductDetailPage() {
                     key={opt.weight}
                     type="button"
                     onClick={() => setSelectedSizeIndex(idx)}
-                    className={`flex-1 min-w-[80px] py-3 rounded-lg text-center font-body text-body-md transition-all ${
-                      selectedSizeIndex === idx
-                        ? 'border-2 border-secondary bg-secondary/5 text-primary font-bold'
-                        : 'border border-outline text-on-surface hover:border-secondary'
-                    }`}
+                    className={`flex-1 min-w-[80px] py-3 rounded-lg text-center font-body text-body-md transition-all ${selectedSizeIndex === idx
+                      ? 'border-2 border-secondary bg-secondary/5 text-primary font-bold'
+                      : 'border border-outline text-on-surface hover:border-secondary'
+                      }`}
                   >
                     {opt.weight}
                     <br />
@@ -233,9 +232,11 @@ export default function ProductDetailPage() {
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-sm text-on-surface-variant line-through">
-                  {formatPrice(currentSize.originalPrice * quantity)}
-                </div>
+                {currentSize.originalPrice && (
+                  <div className="text-sm text-on-surface-variant line-through">
+                    {formatPrice(currentSize.originalPrice * quantity)}
+                  </div>
+                )}
                 <div className="font-headline text-headline-md text-primary">
                   {formatPrice(currentSize.price * quantity)}
                 </div>

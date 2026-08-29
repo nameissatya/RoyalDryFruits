@@ -44,8 +44,10 @@ public class AdminOrdersController : ControllerBase
                 DeliveryCharge = o.DeliveryCharge,
                 TotalAmount = o.TotalAmount,
                 Status = o.Status,
+                CancellationReason = o.CancellationReason,
                 PaymentMethod = o.PaymentMethod,
                 CreatedAt = o.CreatedAt,
+                UpdatedAt = o.UpdatedAt,
                 Items = o.Items.Select(i => new OrderItemDto
                 {
                     Id = i.Id,
@@ -83,8 +85,10 @@ public class AdminOrdersController : ControllerBase
             DeliveryCharge = o.DeliveryCharge,
             TotalAmount = o.TotalAmount,
             Status = o.Status,
+            CancellationReason = o.CancellationReason,
             PaymentMethod = o.PaymentMethod,
             CreatedAt = o.CreatedAt,
+            UpdatedAt = o.UpdatedAt,
             Items = o.Items.Select(i => new OrderItemDto
             {
                 Id = i.Id,
@@ -105,9 +109,23 @@ public class AdminOrdersController : ControllerBase
         if (order == null) return NotFound(new { message = "Order not found" });
 
         order.Status = request.Status;
+        if (request.Status == OrderStatus.Cancelled)
+        {
+            order.CancellationReason = string.IsNullOrWhiteSpace(request.CancellationReason) 
+                ? "Declined by store administrator" 
+                : request.CancellationReason.Trim();
+        }
+        else
+        {
+            order.CancellationReason = null; // Clear if transitioned back from cancelled
+        }
         order.UpdatedAt = DateTime.UtcNow;
 
         await _db.SaveChangesAsync();
-        return Ok(new { message = $"Order status updated to {request.Status}", status = request.Status.ToString() });
+        return Ok(new { 
+            message = $"Order status updated to {request.Status}", 
+            status = request.Status.ToString(),
+            cancellationReason = order.CancellationReason 
+        });
     }
 }

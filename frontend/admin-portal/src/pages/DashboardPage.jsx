@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAdmin } from '../context/AdminContext';
 import PageHeader from '../components/ui/PageHeader';
 import StatCard from '../components/ui/StatCard';
@@ -8,44 +8,57 @@ import RecentOrdersTable from '../components/dashboard/RecentOrdersTable';
 import TopProducts from '../components/dashboard/TopProducts';
 
 export default function DashboardPage() {
-  const { orders, products } = useAdmin();
+  const { orders, products, loadOrders, loadProducts, isOrdersLoading, isProductsLoading } = useAdmin();
   const [timeRange, setTimeRange] = useState('Today');
 
-  const pendingOrdersCount = orders.filter((o) => o.status === 'Pending').length;
-  const totalRevenue = orders.reduce(
-    (acc, o) => acc + (typeof o.total === 'number' ? o.total : 2450),
-    0
-  );
+  // Automatically fetch fresh orders & products on mount
+  useEffect(() => {
+    loadOrders();
+    loadProducts();
+  }, []);
+
+  const pendingOrdersCount = orders.filter((o) => {
+    const s = String(o.status || '').toLowerCase().replace(/\s+/g, '');
+    return s === 'pending';
+  }).length;
+
+  const totalRevenue = orders
+    .filter((o) => String(o.status || '').toLowerCase().replace(/\s+/g, '') !== 'cancelled')
+    .reduce((acc, o) => acc + (typeof o.total === 'number' ? o.total : 0), 0);
 
   const stats = [
     {
       title: 'Total Orders',
       value: orders.length,
-      subtitle: '+12% from last month',
+      subtitle: 'View all orders →',
       subtitleColor: 'success',
       icon: 'shopping_bag',
+      to: '/orders',
     },
     {
       title: 'Total Revenue',
       value: `₹${totalRevenue.toLocaleString('en-IN')}`,
-      subtitle: '+8% from last month',
+      subtitle: 'From completed & active sales',
       subtitleColor: 'success',
       icon: 'payments',
+      to: '/orders',
     },
     {
       title: 'Total Products',
       value: products.length,
-      subtitle: 'Active catalog items',
+      subtitle: 'Manage catalog & stock →',
       subtitleColor: 'muted',
       icon: 'inventory',
+      to: '/products',
     },
     {
       title: 'Pending Orders',
       value: pendingOrdersCount,
-      subtitle: 'Require immediate action',
+      subtitle: pendingOrdersCount > 0 ? 'Action required →' : 'No pending orders',
       subtitleColor: 'error',
       icon: 'warning',
       variant: 'alert',
+      to: '/orders?status=pending',
     },
   ];
 
@@ -60,11 +73,10 @@ export default function DashboardPage() {
               <button
                 key={range}
                 onClick={() => setTimeRange(range)}
-                className={`font-semibold px-sm py-1.5 rounded-md transition-colors ${
-                  timeRange === range
-                    ? 'bg-surface-container-low text-on-surface shadow-sm'
-                    : 'text-on-surface-variant hover:bg-surface-container-low'
-                }`}
+                className={`font-semibold px-sm py-1.5 rounded-md transition-colors ${timeRange === range
+                  ? 'bg-surface-container-low text-on-surface shadow-sm'
+                  : 'text-on-surface-variant hover:bg-surface-container-low'
+                  }`}
               >
                 {range}
               </button>
