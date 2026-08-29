@@ -249,7 +249,15 @@ public class AdminProductsController : ControllerBase
             }
         }
 
-        await _db.SaveChangesAsync();
+        try
+        {
+            await _db.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Conflict(new { message = "The product or one of its variants was modified or deleted by another process. Please reload and retry." });
+        }
+
         return Ok(new { message = "Product updated successfully", id = product.Id });
     }
 

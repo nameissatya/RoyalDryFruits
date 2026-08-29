@@ -78,5 +78,14 @@ public class ApplicationDbContext : DbContext
             .WithMany(o => o.Items)
             .HasForeignKey(oi => oi.OrderId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Concurrency tokens
+        modelBuilder.Entity<Product>()
+            .Property(p => p.RowVersion)
+            .IsRowVersion();
+
+        modelBuilder.Entity<ProductVariant>()
+            .Property(pv => pv.RowVersion)
+            .IsRowVersion();
     }
 }

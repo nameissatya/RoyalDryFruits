@@ -233,6 +233,11 @@ namespace RoyalDryFruits.Infrastructure.Migrations
                     b.Property<int>("ReviewsCount")
                         .HasColumnType("integer");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bytea");
+
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasColumnType("text");
@@ -259,6 +264,11 @@ namespace RoyalDryFruits.Infrastructure.Migrations
 
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uuid");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bytea");
 
                     b.Property<string>("SKU")
                         .IsRequired()

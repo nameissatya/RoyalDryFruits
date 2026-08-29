@@ -11,4 +11,7 @@ public class ProductVariant
     public int StockQuantity { get; set; }
     public string SKU { get; set; } = string.Empty;
     public bool IsActive { get; set; } = true;
+
+    // Concurrency token
+    public byte[]? RowVersion { get; set; }
 }
