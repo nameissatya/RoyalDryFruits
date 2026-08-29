@@ -59,7 +59,8 @@ export async function createProductApi(productData) {
       origin: productData.origin || 'India',
       badge: productData.badge || '',
       rating: Number(productData.rating) || 4.8,
-      reviewsCount: Number(productData.reviewsCount || productData.reviews) || 120,
+      reviewsCount: Number(productData.reviewsCount ?? productData.reviews ?? 0),
+      isActive: productData.isActive !== false,
       isFeatured: !!productData.isFeatured,
       variants: productData.variants || [
         { weightLabel: '250g', price: Number(productData.price250g) || Number(productData.price) || 0, stockQuantity: Number(productData.stock) || 10, sku: '' },
@@ -87,7 +88,7 @@ export async function updateProductApi(id, productData) {
       origin: productData.origin || 'India',
       badge: productData.badge || '',
       rating: Number(productData.rating) || 4.8,
-      reviewsCount: Number(productData.reviewsCount || productData.reviews) || 120,
+      reviewsCount: Number(productData.reviewsCount ?? productData.reviews ?? 0),
       isActive: productData.isActive !== false,
       isFeatured: !!productData.isFeatured,
       variants: productData.variants || [],

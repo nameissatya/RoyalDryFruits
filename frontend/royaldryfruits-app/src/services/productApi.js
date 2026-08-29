@@ -28,7 +28,7 @@ export function formatProductDto(p) {
     price: price,
     originalPrice: Math.round(price * 1.15),
     rating: p.rating || 4.8,
-    reviews: p.reviewsCount || 112,
+    reviews: p.reviewsCount ?? 0,
     badge: p.badge || (p.isFeatured ? 'Bestseller' : 'Premium'),
     image: resolveImageUrl(p.imageUrl),
     origin: p.origin || 'India',

@@ -163,7 +163,7 @@ export default function ProductDetailPage() {
                 <StarHalf className="w-5 h-5 fill-secondary-container text-secondary-container" />
               </div>
               <span className="text-on-surface-variant font-body text-body-md">
-                ({product.reviews || 128} Reviews)
+                ({product.reviews ?? 0} Reviews)
               </span>
             </div>
             <p className="font-body text-body-lg text-on-surface-variant">
