@@ -8,11 +8,15 @@ export default function AdminLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { toastMessage, settings } = useAdmin();
+  const { toastMessage, settings, refreshAllData } = useAdmin();
   const adminUser = getAdminUser();
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    // Refresh all data from database whenever switching pages or tabs
+    if (localStorage.getItem('adminToken') && refreshAllData) {
+      refreshAllData();
+    }
   }, [location.pathname]);
 
   const toggleMobileOpen = () => {

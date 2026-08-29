@@ -7,6 +7,7 @@ import {
   updateProductApi,
   uploadProductImageApi,
 } from '../services/productApi';
+import { useCategoriesQuery } from '../hooks/useQueries';
 import { resolveImageUrl } from '../services/apiConfig';
 import Button from '../components/ui/Button';
 
@@ -29,7 +30,7 @@ const initialForm = {
   reviewsCount: '0',
   isActive: true,
   isFeatured: false,
-  variants: [newVariant('250g'), newVariant('500g'), newVariant('1kg')],
+  variants: [newVariant('250g')],
 };
 
 const inputClass =
@@ -39,13 +40,22 @@ export default function ProductFormPage() {
   const { productId } = useParams();
   const isEditing = Boolean(productId);
   const navigate = useNavigate();
-  const { categories, showToast, loadProducts, loadCategories } = useAdmin();
+  const { data: queryCategories = [], refetch: refetchCategories } = useCategoriesQuery();
+  const { categories: contextCategories, showToast, loadProducts, loadCategories } = useAdmin();
+  const categories = queryCategories.length > 0 ? queryCategories : contextCategories;
+
   const [form, setForm] = useState(initialForm);
   const [imagePreview, setImagePreview] = useState('');
   const [isLoading, setIsLoading] = useState(isEditing);
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
+
+  // Fetch latest categories from DB immediately on page mount
+  useEffect(() => {
+    refetchCategories();
+    loadCategories();
+  }, []);
 
   useEffect(() => {
     if (!isEditing && !form.categoryId && categories.length > 0) {
@@ -74,13 +84,13 @@ export default function ProductFormPage() {
           isFeatured: Boolean(product.isFeatured),
           variants: product.variants?.length
             ? product.variants.map((variant) => ({
-                id: variant.id,
-                weightLabel: variant.weightLabel || '',
-                price: String(variant.price ?? ''),
-                stockQuantity: String(variant.stockQuantity ?? ''),
-                sku: variant.sku || '',
-                isActive: variant.isActive !== false,
-              }))
+              id: variant.id,
+              weightLabel: variant.weightLabel || '',
+              price: String(variant.price ?? ''),
+              stockQuantity: String(variant.stockQuantity ?? ''),
+              sku: variant.sku || '',
+              isActive: variant.isActive !== false,
+            }))
             : [newVariant('500g')],
         });
         setImagePreview(resolveImageUrl(product.imageUrl));

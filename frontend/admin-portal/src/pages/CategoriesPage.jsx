@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAdmin } from '../context/AdminContext';
 import {
   useCategoriesQuery,
   useCreateCategoryMutation,
@@ -10,6 +11,7 @@ import Modal from '../components/ui/Modal';
 import Badge from '../components/ui/Badge';
 
 export default function CategoriesPage() {
+  const { loadCategories } = useAdmin();
   const { data: categories = [], isLoading: isCategoriesLoading } = useCategoriesQuery();
   const createCategoryMutation = useCreateCategoryMutation();
   const updateCategoryMutation = useUpdateCategoryMutation();
@@ -35,6 +37,7 @@ export default function CategoriesPage() {
       icon: 'spa',
       description: catDesc || 'Premium dry fruits category.',
     });
+    if (loadCategories) loadCategories();
     setCatName('');
     setCatDesc('');
     setShowAddModal(false);
@@ -58,12 +61,14 @@ export default function CategoriesPage() {
         description: editDesc,
       },
     });
+    if (loadCategories) loadCategories();
     setCategoryToEdit(null);
   };
 
   const confirmDelete = async () => {
     if (categoryToDelete) {
       await deleteCategoryMutation.mutateAsync(categoryToDelete.id);
+      if (loadCategories) loadCategories();
       setCategoryToDelete(null);
     }
   };
