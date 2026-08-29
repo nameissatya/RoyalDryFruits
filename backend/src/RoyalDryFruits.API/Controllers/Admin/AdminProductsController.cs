@@ -178,43 +178,88 @@ public class AdminProductsController : ControllerBase
 
         if (product == null) return NotFound(new { message = "Product not found" });
 
-        product.CategoryId = request.CategoryId;
+        if (request.CategoryId != Guid.Empty)
+        {
+            var category = await _db.Categories.FindAsync(request.CategoryId);
+            if (category != null)
+            {
+                product.CategoryId = request.CategoryId;
+            }
+        }
+
         product.Name = request.Name;
-        product.Slug = request.Name.ToLower().Replace(" ", "-");
+        product.Slug = !string.IsNullOrWhiteSpace(request.Name) 
+            ? request.Name.ToLower().Trim().Replace(" ", "-") 
+            : product.Slug;
         product.Description = request.Description;
         product.ImageUrl = request.ImageUrl;
         product.Origin = request.Origin;
-        product.Badge = request.Badge;
+        product.Badge = request.Badge ?? string.Empty;
         product.Rating = request.Rating > 0 ? request.Rating : 4.8;
-        product.ReviewsCount = request.ReviewsCount > 0 ? request.ReviewsCount : 120;
+        product.ReviewsCount = request.ReviewsCount >= 0 ? request.ReviewsCount : 0;
         product.IsActive = request.IsActive;
         product.IsFeatured = request.IsFeatured;
 
-        // Sync Variants
-        _db.ProductVariants.RemoveRange(product.Variants);
+        // Synchronize Variants safely
         if (request.Variants != null)
         {
-            foreach (var v in request.Variants)
+            var requestedVariantIds = request.Variants
+                .Where(v => v.Id != Guid.Empty)
+                .Select(v => v.Id)
+                .ToHashSet();
+
+            // 1. Remove variants that were deleted in the editor
+            var variantsToRemove = product.Variants
+                .Where(v => !requestedVariantIds.Contains(v.Id))
+                .ToList();
+
+            foreach (var v in variantsToRemove)
             {
+                _db.ProductVariants.Remove(v);
+            }
+
+            // 2. Update existing variants or add newly created ones
+            foreach (var vDto in request.Variants)
+            {
+                if (vDto.Id != Guid.Empty)
+                {
+                    var existingVariant = product.Variants.FirstOrDefault(v => v.Id == vDto.Id);
+                    if (existingVariant != null)
+                    {
+                        existingVariant.WeightLabel = vDto.WeightLabel;
+                        existingVariant.Price = vDto.Price;
+                        existingVariant.StockQuantity = vDto.StockQuantity;
+                        existingVariant.SKU = string.IsNullOrWhiteSpace(vDto.SKU) ? existingVariant.SKU : vDto.SKU;
+                        existingVariant.IsActive = vDto.IsActive;
+                        continue;
+                    }
+                }
+
+                // Add new variant
                 product.Variants.Add(new ProductVariant
                 {
-                    WeightLabel = v.WeightLabel,
-                    Price = v.Price,
-                    StockQuantity = v.StockQuantity,
-                    SKU = v.SKU,
-                    IsActive = v.IsActive
+                    Id = Guid.NewGuid(),
+                    ProductId = product.Id,
+                    WeightLabel = vDto.WeightLabel,
+                    Price = vDto.Price,
+                    StockQuantity = vDto.StockQuantity,
+                    SKU = string.IsNullOrWhiteSpace(vDto.SKU) ? $"PRD-{Random.Shared.Next(1000, 9999)}" : vDto.SKU,
+                    IsActive = vDto.IsActive
                 });
             }
         }
 
         await _db.SaveChangesAsync();
-        return Ok(new { message = "Product updated successfully" });
+        return Ok(new { message = "Product updated successfully", id = product.Id });
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var product = await _db.Products.FindAsync(id);
+        var product = await _db.Products
+            .Include(p => p.Variants)
+            .FirstOrDefaultAsync(p => p.Id == id);
+
         if (product == null) return NotFound(new { message = "Product not found" });
 
         _db.Products.Remove(product);
