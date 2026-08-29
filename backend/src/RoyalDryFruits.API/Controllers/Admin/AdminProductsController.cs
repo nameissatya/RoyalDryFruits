@@ -191,9 +191,9 @@ public class AdminProductsController : ControllerBase
         product.Slug = !string.IsNullOrWhiteSpace(request.Name) 
             ? request.Name.ToLower().Trim().Replace(" ", "-") 
             : product.Slug;
-        product.Description = request.Description;
-        product.ImageUrl = request.ImageUrl;
-        product.Origin = request.Origin;
+        product.Description = request.Description ?? string.Empty;
+        product.ImageUrl = request.ImageUrl ?? string.Empty;
+        product.Origin = request.Origin ?? string.Empty;
         product.Badge = request.Badge ?? string.Empty;
         product.Rating = request.Rating > 0 ? request.Rating : 4.8;
         product.ReviewsCount = request.ReviewsCount >= 0 ? request.ReviewsCount : 0;
@@ -201,7 +201,7 @@ public class AdminProductsController : ControllerBase
         product.IsFeatured = request.IsFeatured;
 
         // Synchronize Variants safely
-        if (request.Variants != null)
+        if (request.Variants != null && request.Variants.Any())
         {
             var requestedVariantIds = request.Variants
                 .Where(v => v.Id != Guid.Empty)
@@ -221,35 +221,59 @@ public class AdminProductsController : ControllerBase
             // 2. Update existing variants or add newly created ones
             foreach (var vDto in request.Variants)
             {
+                ProductVariant? existingVariant = null;
                 if (vDto.Id != Guid.Empty)
                 {
-                    var existingVariant = product.Variants.FirstOrDefault(v => v.Id == vDto.Id);
-                    if (existingVariant != null)
-                    {
-                        existingVariant.WeightLabel = vDto.WeightLabel;
-                        existingVariant.Price = vDto.Price;
-                        existingVariant.StockQuantity = vDto.StockQuantity;
-                        existingVariant.SKU = string.IsNullOrWhiteSpace(vDto.SKU) ? existingVariant.SKU : vDto.SKU;
-                        existingVariant.IsActive = vDto.IsActive;
-                        continue;
-                    }
+                    existingVariant = product.Variants.FirstOrDefault(v => v.Id == vDto.Id);
                 }
 
-                // Add new variant
-                product.Variants.Add(new ProductVariant
+                if (existingVariant != null)
                 {
-                    Id = Guid.NewGuid(),
-                    ProductId = product.Id,
-                    WeightLabel = vDto.WeightLabel,
-                    Price = vDto.Price,
-                    StockQuantity = vDto.StockQuantity,
-                    SKU = string.IsNullOrWhiteSpace(vDto.SKU) ? $"PRD-{Random.Shared.Next(1000, 9999)}" : vDto.SKU,
-                    IsActive = vDto.IsActive
-                });
+                    existingVariant.WeightLabel = vDto.WeightLabel ?? string.Empty;
+                    existingVariant.Price = vDto.Price;
+                    existingVariant.StockQuantity = vDto.StockQuantity;
+                    existingVariant.SKU = string.IsNullOrWhiteSpace(vDto.SKU) ? existingVariant.SKU : vDto.SKU;
+                    existingVariant.IsActive = vDto.IsActive;
+                }
+                else
+                {
+                    // Add new variant
+                    var newVar = new ProductVariant
+                    {
+                        Id = vDto.Id != Guid.Empty ? vDto.Id : Guid.NewGuid(),
+                        ProductId = product.Id,
+                        WeightLabel = vDto.WeightLabel ?? string.Empty,
+                        Price = vDto.Price,
+                        StockQuantity = vDto.StockQuantity,
+                        SKU = string.IsNullOrWhiteSpace(vDto.SKU) ? $"PRD-{Random.Shared.Next(1000, 9999)}" : vDto.SKU,
+                        IsActive = vDto.IsActive
+                    };
+                    product.Variants.Add(newVar);
+                }
             }
         }
 
-        await _db.SaveChangesAsync();
+        try
+        {
+            await _db.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            // Resolve optimistic concurrency conflicts by detaching phantom rows and reloading actual state
+            foreach (var entry in ex.Entries)
+            {
+                if (entry.State == EntityState.Deleted)
+                {
+                    entry.State = EntityState.Detached;
+                }
+                else
+                {
+                    await entry.ReloadAsync();
+                }
+            }
+            await _db.SaveChangesAsync();
+        }
+
         return Ok(new { message = "Product updated successfully", id = product.Id });
     }
 
