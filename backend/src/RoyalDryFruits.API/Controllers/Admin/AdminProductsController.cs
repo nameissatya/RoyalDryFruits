@@ -173,15 +173,14 @@ public class AdminProductsController : ControllerBase
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateProductRequest request)
     {
         var product = await _db.Products
-            .Include(p => p.Variants)
             .FirstOrDefaultAsync(p => p.Id == id);
 
         if (product == null) return NotFound(new { message = "Product not found" });
 
         if (request.CategoryId != Guid.Empty)
         {
-            var category = await _db.Categories.FindAsync(request.CategoryId);
-            if (category != null)
+            var categoryExists = await _db.Categories.AnyAsync(c => c.Id == request.CategoryId);
+            if (categoryExists)
             {
                 product.CategoryId = request.CategoryId;
             }
@@ -200,80 +199,57 @@ public class AdminProductsController : ControllerBase
         product.IsActive = request.IsActive;
         product.IsFeatured = request.IsFeatured;
 
-        // Synchronize Variants safely
+        // Fetch variants directly from database
+        var existingVariantsInDb = await _db.ProductVariants
+            .Where(v => v.ProductId == product.Id)
+            .ToListAsync();
+
+        var incomingVariantIds = request.Variants?
+            .Where(v => v.Id != Guid.Empty)
+            .Select(v => v.Id)
+            .ToHashSet() ?? new HashSet<Guid>();
+
+        // 1. Remove deleted variants from DB
+        var variantsToDelete = existingVariantsInDb
+            .Where(v => !incomingVariantIds.Contains(v.Id))
+            .ToList();
+
+        if (variantsToDelete.Any())
+        {
+            _db.ProductVariants.RemoveRange(variantsToDelete);
+        }
+
+        // 2. Update existing or insert new
         if (request.Variants != null && request.Variants.Any())
         {
-            var requestedVariantIds = request.Variants
-                .Where(v => v.Id != Guid.Empty)
-                .Select(v => v.Id)
-                .ToHashSet();
-
-            // 1. Remove variants that were deleted in the editor
-            var variantsToRemove = product.Variants
-                .Where(v => !requestedVariantIds.Contains(v.Id))
-                .ToList();
-
-            foreach (var v in variantsToRemove)
-            {
-                _db.ProductVariants.Remove(v);
-            }
-
-            // 2. Update existing variants or add newly created ones
             foreach (var vDto in request.Variants)
             {
-                ProductVariant? existingVariant = null;
-                if (vDto.Id != Guid.Empty)
+                var existingVar = existingVariantsInDb.FirstOrDefault(v => v.Id == vDto.Id);
+                if (existingVar != null)
                 {
-                    existingVariant = product.Variants.FirstOrDefault(v => v.Id == vDto.Id);
-                }
-
-                if (existingVariant != null)
-                {
-                    existingVariant.WeightLabel = vDto.WeightLabel ?? string.Empty;
-                    existingVariant.Price = vDto.Price;
-                    existingVariant.StockQuantity = vDto.StockQuantity;
-                    existingVariant.SKU = string.IsNullOrWhiteSpace(vDto.SKU) ? existingVariant.SKU : vDto.SKU;
-                    existingVariant.IsActive = vDto.IsActive;
+                    existingVar.WeightLabel = vDto.WeightLabel ?? string.Empty;
+                    existingVar.Price = vDto.Price;
+                    existingVar.StockQuantity = vDto.StockQuantity;
+                    existingVar.SKU = string.IsNullOrWhiteSpace(vDto.SKU) ? existingVar.SKU : vDto.SKU;
+                    existingVar.IsActive = vDto.IsActive;
                 }
                 else
                 {
-                    // Add new variant
-                    var newVar = new ProductVariant
+                    _db.ProductVariants.Add(new ProductVariant
                     {
-                        Id = vDto.Id != Guid.Empty ? vDto.Id : Guid.NewGuid(),
+                        Id = Guid.NewGuid(),
                         ProductId = product.Id,
                         WeightLabel = vDto.WeightLabel ?? string.Empty,
                         Price = vDto.Price,
                         StockQuantity = vDto.StockQuantity,
                         SKU = string.IsNullOrWhiteSpace(vDto.SKU) ? $"PRD-{Random.Shared.Next(1000, 9999)}" : vDto.SKU,
                         IsActive = vDto.IsActive
-                    };
-                    product.Variants.Add(newVar);
+                    });
                 }
             }
         }
 
-        try
-        {
-            await _db.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException ex)
-        {
-            // Resolve optimistic concurrency conflicts by detaching phantom rows and reloading actual state
-            foreach (var entry in ex.Entries)
-            {
-                if (entry.State == EntityState.Deleted)
-                {
-                    entry.State = EntityState.Detached;
-                }
-                else
-                {
-                    await entry.ReloadAsync();
-                }
-            }
-            await _db.SaveChangesAsync();
-        }
-
+        await _db.SaveChangesAsync();
         return Ok(new { message = "Product updated successfully", id = product.Id });
     }
 
