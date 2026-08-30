@@ -6,6 +6,7 @@ using RoyalDryFruits.API.Middlewares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using CloudinaryDotNet;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
@@ -30,6 +31,16 @@ builder.Services.AddCors(options =>
               .AllowCredentials();
     });
 });
+
+// Configure Cloudinary for permanent image storage across server restarts
+var cloudName = builder.Configuration["Cloudinary:CloudName"] ?? Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME") ?? "kj2scw6k";
+var apiKey = builder.Configuration["Cloudinary:ApiKey"] ?? Environment.GetEnvironmentVariable("CLOUDINARY_API_KEY") ?? "272153177269493";
+var apiSecret = builder.Configuration["Cloudinary:ApiSecret"] ?? Environment.GetEnvironmentVariable("CLOUDINARY_API_SECRET") ?? "3aNzvbptC7_8LN5nl8ucmV8ieow";
+
+var cloudinaryAccount = new Account(cloudName, apiKey, apiSecret);
+var cloudinary = new Cloudinary(cloudinaryAccount);
+cloudinary.Api.Secure = true;
+builder.Services.AddSingleton(cloudinary);
 
 builder.Services.AddControllers();
 builder.Services.AddHttpClient();

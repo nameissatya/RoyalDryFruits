@@ -3,6 +3,8 @@ using RoyalDryFruits.Domain.Entities;
 using RoyalDryFruits.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 
 namespace RoyalDryFruits.API.Controllers.Admin;
 
@@ -24,63 +26,22 @@ public class AdminProductsController : ControllerBase
             .Include(p => p.Category)
             .Include(p => p.Variants)
             .OrderByDescending(p => p.CreatedAt)
-            .Select(p => new ProductDto
-            {
-                Id = p.Id,
-                CategoryId = p.CategoryId,
-                CategoryName = p.Category != null ? p.Category.Name : string.Empty,
-                Name = p.Name,
-                Slug = p.Slug,
-                Description = p.Description,
-                ImageUrl = p.ImageUrl,
-                Origin = p.Origin,
-                Badge = p.Badge,
-                Rating = p.Rating > 0 ? p.Rating : 4.8,
-                ReviewsCount = p.ReviewsCount > 0 ? p.ReviewsCount : 120,
-                IsActive = p.IsActive,
-                IsFeatured = p.IsFeatured,
-                CreatedAt = p.CreatedAt,
-                Variants = p.Variants.Select(v => new ProductVariantDto
-                {
-                    Id = v.Id,
-                    WeightLabel = v.WeightLabel,
-                    Price = v.Price,
-                    StockQuantity = v.StockQuantity,
-                    SKU = v.SKU,
-                    IsActive = v.IsActive
-                }).ToList()
-            })
             .ToListAsync();
 
-        return Ok(products);
-    }
-
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid id)
-    {
-        var p = await _db.Products
-            .Include(x => x.Category)
-            .Include(x => x.Variants)
-            .FirstOrDefaultAsync(x => x.Id == id);
-
-        if (p == null) return NotFound(new { message = "Product not found" });
-
-        return Ok(new ProductDto
+        var dtos = products.Select(p => new ProductDto
         {
             Id = p.Id,
             CategoryId = p.CategoryId,
-            CategoryName = p.Category != null ? p.Category.Name : string.Empty,
+            CategoryName = p.Category?.Name ?? string.Empty,
             Name = p.Name,
             Slug = p.Slug,
             Description = p.Description,
             ImageUrl = p.ImageUrl,
+            IsFeatured = p.IsFeatured,
             Origin = p.Origin,
             Badge = p.Badge,
-            Rating = p.Rating > 0 ? p.Rating : 4.8,
-            ReviewsCount = p.ReviewsCount > 0 ? p.ReviewsCount : 120,
-            IsActive = p.IsActive,
-            IsFeatured = p.IsFeatured,
-            CreatedAt = p.CreatedAt,
+            Rating = p.Rating,
+            ReviewsCount = p.ReviewsCount,
             Variants = p.Variants.Select(v => new ProductVariantDto
             {
                 Id = v.Id,
@@ -90,11 +51,52 @@ public class AdminProductsController : ControllerBase
                 SKU = v.SKU,
                 IsActive = v.IsActive
             }).ToList()
-        });
+        }).ToList();
+
+        return Ok(dtos);
+    }
+
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetById(Guid id)
+    {
+        var product = await _db.Products
+            .Include(p => p.Category)
+            .Include(p => p.Variants)
+            .FirstOrDefaultAsync(p => p.Id == id);
+
+        if (product == null)
+            return NotFound(new { message = "Product not found" });
+
+        var dto = new ProductDto
+        {
+            Id = product.Id,
+            CategoryId = product.CategoryId,
+            CategoryName = product.Category?.Name ?? string.Empty,
+            Name = product.Name,
+            Slug = product.Slug,
+            Description = product.Description,
+            ImageUrl = product.ImageUrl,
+            IsFeatured = product.IsFeatured,
+            Origin = product.Origin,
+            Badge = product.Badge,
+            Rating = product.Rating,
+            ReviewsCount = product.ReviewsCount,
+            Variants = product.Variants.Select(v => new ProductVariantDto
+            {
+                Id = v.Id,
+                WeightLabel = v.WeightLabel,
+                Price = v.Price,
+                StockQuantity = v.StockQuantity,
+                SKU = v.SKU,
+                IsActive = v.IsActive
+            }).ToList()
+        };
+
+        return Ok(dto);
     }
 
     [HttpPost("upload-image")]
-    public async Task<IActionResult> UploadImage(IFormFile file)
+    public async Task<IActionResult> UploadImage(IFormFile file, [FromServices] IServiceProvider sp)
     {
         if (file == null || file.Length == 0)
             return BadRequest(new { message = "No image file uploaded" });
@@ -104,6 +106,43 @@ public class AdminProductsController : ControllerBase
         if (!allowedExtensions.Contains(ext))
             return BadRequest(new { message = "Invalid image extension. Only JPG, PNG, WEBP allowed." });
 
+        // 1. Attempt Cloudinary permanent CDN upload
+        var cloudinary = sp.GetService<Cloudinary>();
+        if (cloudinary != null)
+        {
+            try
+            {
+                await using var stream = file.OpenReadStream();
+                var uploadParams = new ImageUploadParams
+                {
+                    File = new FileDescription(file.FileName, stream),
+                    Folder = "royaldryfruits/products",
+                    UseFilename = true,
+                    UniqueFilename = true,
+                    Overwrite = false
+                };
+
+                var uploadResult = await cloudinary.UploadAsync(uploadParams);
+                if (uploadResult.Error == null && uploadResult.SecureUrl != null)
+                {
+                    var secureUrl = uploadResult.SecureUrl.ToString();
+                    return Ok(new
+                    {
+                        imageUrl = secureUrl,
+                        fullUrl = secureUrl,
+                        fileName = uploadResult.PublicId
+                    });
+                }
+
+                Console.WriteLine($"Cloudinary note: {uploadResult.Error?.Message}. Falling back to local storage.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Cloudinary upload exception: {ex.Message}. Falling back to local storage.");
+            }
+        }
+
+        // 2. Local disk fallback
         var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "products");
         if (!Directory.Exists(uploadsFolder))
         {
@@ -119,7 +158,7 @@ public class AdminProductsController : ControllerBase
         }
 
         var relativeUrl = $"/uploads/products/{uniqueFileName}";
-        return Ok(new { imageUrl = relativeUrl, fileName = uniqueFileName });
+        return Ok(new { imageUrl = relativeUrl, fullUrl = relativeUrl, fileName = uniqueFileName });
     }
 
     [HttpPost]
