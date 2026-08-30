@@ -21,6 +21,7 @@ export function formatProductDto(p) {
 
   return {
     id: p.id,
+    categoryId: p.categoryId,
     slug: p.slug || p.id,
     name: p.name,
     category: p.categoryName || 'Nuts & Almonds',

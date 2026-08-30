@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Image as ImageIcon, Minus, Plus, Trash2, ArrowRight, CheckCircle2, Truck, ShoppingCart } from 'lucide-react'
+import { Image as ImageIcon, Minus, Plus, Trash2, ArrowRight, CheckCircle2, Truck, ShoppingCart, AlertTriangle, Lock } from 'lucide-react'
 import WhatsAppIcon from '../components/common/WhatsAppIcon'
 import { useCart } from '../context/CartContext'
 import { getWhatsAppLink, STORE_WHATSAPP } from '../config/storeConfig'
@@ -96,6 +96,9 @@ function CartItem({ item }) {
 function OrderSummary() {
   const { items, subtotal, deliveryFee, total, isFreeDelivery, freeDeliveryThreshold, amountNeededForFreeDelivery, minOrderValue, storeSettings } = useCart()
 
+  const isUnderMinOrder = minOrderValue > 0 && subtotal < minOrderValue
+  const minOrderShortfall = minOrderValue > 0 ? minOrderValue - subtotal : 0
+
   const handleWhatsAppOrder = () => {
     let text = 'Hello Royal Dry Fruits! I would like to place an order:\n\n'
     items.forEach(item => {
@@ -145,10 +148,24 @@ function OrderSummary() {
         </div>
       )}
 
-      {/* Minimum order notice */}
-      {minOrderValue > 0 && subtotal < minOrderValue && (
-        <div className="mb-6 p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-center gap-2">
-          <span>⚠️ Minimum order value is <strong>{formatPrice(minOrderValue)}</strong></span>
+      {/* Minimum order notice & warning */}
+      {isUnderMinOrder && (
+        <div className="mb-6 p-3.5 rounded-xl bg-amber-50 border border-amber-300 text-xs text-amber-900 flex items-start gap-2.5 shadow-sm">
+          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <p className="font-bold text-amber-950">
+              Minimum order value is {formatPrice(minOrderValue)}. Please add more items to continue.
+            </p>
+            <p className="text-amber-800">
+              Add <strong>{formatPrice(minOrderShortfall)}</strong> more of your favourite dry fruits to unlock checkout.
+            </p>
+            <Link
+              to="/collections"
+              className="inline-block mt-1 text-primary font-bold hover:underline"
+            >
+              + Browse Collections →
+            </Link>
+          </div>
         </div>
       )}
 
@@ -194,17 +211,35 @@ function OrderSummary() {
 
       {/* Checkout Buttons */}
       <div className="flex flex-col gap-3">
-        <Link
-          to="/checkout"
-          className="w-full py-4 bg-primary text-on-primary font-label text-label-md rounded-full hover:bg-secondary transition-all duration-300 shadow-[0_4px_20px_0_rgba(48,24,0,0.15)] hover:shadow-[0_8px_25px_0_rgba(48,24,0,0.2)] hover:-translate-y-0.5 flex items-center justify-center gap-2 font-bold"
-        >
-          Proceed to Checkout
-          <ArrowRight className="w-5 h-5" />
-        </Link>
+        {isUnderMinOrder ? (
+          <button
+            type="button"
+            disabled
+            className="w-full py-4 bg-outline-variant/50 text-on-surface-variant/70 font-label text-label-md rounded-full cursor-not-allowed flex items-center justify-center gap-2 font-bold shadow-none border border-outline-variant/60"
+            title={`Minimum order value of ${formatPrice(minOrderValue)} required`}
+          >
+            <span>Proceed to Checkout</span>
+            <Lock className="w-4 h-4 text-on-surface-variant/70" />
+          </button>
+        ) : (
+          <Link
+            to="/checkout"
+            className="w-full py-4 bg-primary text-on-primary font-label text-label-md rounded-full hover:bg-secondary transition-all duration-300 shadow-[0_4px_20px_0_rgba(48,24,0,0.15)] hover:shadow-[0_8px_25px_0_rgba(48,24,0,0.2)] hover:-translate-y-0.5 flex items-center justify-center gap-2 font-bold"
+          >
+            Proceed to Checkout
+            <ArrowRight className="w-5 h-5" />
+          </Link>
+        )}
         
         <button
           onClick={handleWhatsAppOrder}
-          className="w-full py-4 bg-[#25D366] text-white font-label text-label-md rounded-full hover:brightness-105 transition-all duration-300 shadow-sm hover:-translate-y-0.5 flex items-center justify-center gap-2 font-bold cursor-pointer"
+          disabled={isUnderMinOrder}
+          className={`w-full py-4 rounded-full transition-all duration-300 flex items-center justify-center gap-2 font-bold font-label text-label-md ${
+            isUnderMinOrder 
+              ? 'bg-outline-variant/40 text-on-surface-variant/60 cursor-not-allowed shadow-none border border-outline-variant/50' 
+              : 'bg-[#25D366] text-white hover:brightness-105 shadow-sm hover:-translate-y-0.5 cursor-pointer'
+          }`}
+          title={isUnderMinOrder ? `Minimum order value of ${formatPrice(minOrderValue)} required` : 'Order on WhatsApp'}
         >
           <WhatsAppIcon className="w-5 h-5" />
           Order on WhatsApp

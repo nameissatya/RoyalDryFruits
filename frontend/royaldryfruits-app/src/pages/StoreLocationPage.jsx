@@ -1,10 +1,24 @@
 import { Link } from 'react-router-dom'
 import { ArrowLeft, MapPin, Clock, Phone, Navigation, Sparkles, ShieldCheck, ShoppingBag } from 'lucide-react'
 import WhatsAppIcon from '../components/common/WhatsAppIcon'
-import { getWhatsAppLink, formatDisplayPhone, STORE_PHONE } from '../config/storeConfig'
+import { useCart } from '../context/CartContext'
+import { getWhatsAppLink, formatDisplayPhone, STORE_PHONE, STORE_EMAIL, STORE_ADDRESS, STORE_NAME } from '../config/storeConfig'
 import mapImg from '../assets/images/checkout-map.jpg'
 
 export default function StoreLocationPage() {
+  const { storeSettings, freeDeliveryRadius } = useCart()
+  const activePhone = storeSettings?.phone || STORE_PHONE
+  const activeEmail = storeSettings?.email || STORE_EMAIL
+  const activeAddress = storeSettings?.address || STORE_ADDRESS
+  const activeStoreName = storeSettings?.storeName || STORE_NAME
+  const activeRadius = freeDeliveryRadius || 10
+
+  const lat = storeSettings?.latitude
+  const lng = storeSettings?.longitude
+  const mapsUrl = lat && lng 
+    ? `https://maps.google.com/?q=${lat},${lng}`
+    : `https://maps.google.com/?q=${encodeURIComponent(activeAddress)}`
+
   return (
     <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-8 md:py-12">
       {/* Top Back Navigation */}
@@ -26,7 +40,7 @@ export default function StoreLocationPage() {
           Visit Our Store
         </h1>
         <p className="font-body text-body-md text-on-surface-variant">
-          Experience our full collection of premium dry fruits, artisanal gift hampers, and gourmet sweets in person.
+          Experience our full collection of premium dry fruits, artisanal gift hampers, and gourmet selections in person at {activeStoreName}.
         </p>
       </div>
 
@@ -42,13 +56,11 @@ export default function StoreLocationPage() {
               Store Address
             </h3>
             <p className="font-body text-body-md text-on-surface-variant leading-relaxed mb-4">
-              Royal Dry Fruits Experience Store,<br />
-              Main Road, Pippara,<br />
-              Andhra Pradesh, India
+              {activeAddress}
             </p>
           </div>
           <a
-            href="https://maps.google.com/?q=Pippara,Andhra+Pradesh"
+            href={mapsUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 font-label text-label-md text-secondary font-bold hover:underline"
@@ -96,16 +108,16 @@ export default function StoreLocationPage() {
             <p className="font-body text-body-md text-on-surface-variant mb-4">
               Call us directly or chat on WhatsApp for bulk order inquiries, corporate gifts, and custom hampers.
             </p>
-            <a href={`tel:${STORE_PHONE}`} className="font-headline text-headline-sm text-secondary font-bold mb-1 hover:underline block">
-              {formatDisplayPhone(STORE_PHONE)}
+            <a href={`tel:${activePhone}`} className="font-headline text-headline-sm text-secondary font-bold mb-1 hover:underline block">
+              {formatDisplayPhone(activePhone)}
             </a>
             <p className="font-body text-body-xs text-on-surface-variant">
-              Email: contact@royaldryfruits.com
+              Email: {activeEmail}
             </p>
           </div>
 
           <a
-            href={getWhatsAppLink('Hi Royal Dry Fruits, I want to visit your store')}
+            href={getWhatsAppLink(`Hi ${activeStoreName}, I want to visit your store`, activePhone)}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-6 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 font-label text-label-md font-bold hover:bg-emerald-100 transition-colors cursor-pointer"
@@ -122,8 +134,8 @@ export default function StoreLocationPage() {
           <img src={mapImg} alt="Store Map Location" className="w-full h-full object-cover filter contrast-[1.05]" />
           <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/30 to-transparent flex items-end p-8">
             <div className="text-on-primary">
-              <span className="font-label text-xs uppercase tracking-widest font-bold text-secondary-fixed">Pippara Hub</span>
-              <h2 className="font-display text-display-md text-white font-bold mb-1">Pippara Royal Branch</h2>
+              <span className="font-label text-xs uppercase tracking-widest font-bold text-secondary-fixed">{activeStoreName}</span>
+              <h2 className="font-display text-display-md text-white font-bold mb-1">{activeStoreName} Experience Store</h2>
               <p className="font-body text-body-md text-white/90">Equipped with 100% Temperature-Controlled Freshness Vault</p>
             </div>
           </div>
@@ -136,7 +148,7 @@ export default function StoreLocationPage() {
           { title: 'Free Tasting Counter', desc: 'Sample raw, roasted, and flavored dry fruits before buying', icon: Sparkles },
           { title: 'Custom Hampers Desk', desc: 'Personalized gift packaging for weddings & corporate events', icon: ShoppingBag },
           { title: 'Cold Storage Vault', desc: 'Preserves natural oils, crispness, and zero preservatives', icon: ShieldCheck },
-          { title: '10km Express Hub', desc: 'Direct dispatch center for 2-Hour neighborhood deliveries', icon: Navigation },
+          { title: `${activeRadius}km Express Hub`, desc: `Direct dispatch center for fast neighborhood deliveries within ${activeRadius}km`, icon: Navigation },
         ].map((feat, idx) => {
           const IconComponent = feat.icon
           return (

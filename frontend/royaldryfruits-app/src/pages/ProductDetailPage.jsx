@@ -16,7 +16,7 @@ function formatPrice(amount) {
 export default function ProductDetailPage() {
   const { productId } = useParams()
   const navigate = useNavigate()
-  const { addItem } = useCart()
+  const { addItem, freeDeliveryRadius } = useCart()
 
   const [product, setProduct] = useState(null)
   const [relatedList, setRelatedList] = useState([])
@@ -34,7 +34,28 @@ export default function ProductDetailPage() {
       if (isMounted) {
         setProduct(data)
         if (data) {
-          setRelatedList(allProds.filter(p => p.id !== data.id && p.slug !== data.slug).slice(0, 4))
+          // Filter products from the same category
+          const sameCategoryProds = allProds.filter(p => 
+            p.id !== data.id && 
+            p.slug !== data.slug && 
+            (
+              (data.categoryId && p.categoryId === data.categoryId) ||
+              (data.category && p.category && data.category.toLowerCase().trim() === p.category.toLowerCase().trim())
+            )
+          )
+
+          // If less than 4 same-category items, append other products
+          if (sameCategoryProds.length >= 4) {
+            setRelatedList(sameCategoryProds.slice(0, 4))
+          } else {
+            const otherProds = allProds.filter(p => 
+              p.id !== data.id && 
+              p.slug !== data.slug && 
+              !sameCategoryProds.some(sc => sc.id === p.id)
+            )
+            setRelatedList([...sameCategoryProds, ...otherProds].slice(0, 4))
+          }
+
           const idx = (data.variants || []).findIndex(v => v.weight === '500g')
           setSelectedSizeIndex(idx >= 0 ? idx : 0)
         }
@@ -175,7 +196,7 @@ export default function ProductDetailPage() {
             <div className="flex items-center gap-3 text-secondary mb-4">
               <Truck className="w-5 h-5" />
               <span className="font-label text-label-md">
-                Delivery available within 10km – COD
+                Fast Local Delivery (within {freeDeliveryRadius || 10}km Free Zone) – COD
               </span>
             </div>
 
@@ -252,27 +273,6 @@ export default function ProductDetailPage() {
               <ShoppingCart className="w-5 h-5" />
               Add to Cart
             </button>
-          </div>
-
-          {/* Nutrition */}
-          <div className="border-t border-outline-variant/30 pt-6">
-            <h3 className="font-headline text-headline-sm text-primary mb-4">
-              Nutritional Benefits (per 100g)
-            </h3>
-            <ul className="flex flex-col">
-              <li className="flex justify-between py-3 border-b border-surface-variant/50">
-                <span className="text-on-surface-variant font-body text-body-md">Protein</span>
-                <span className="text-primary font-bold font-body text-body-md">21g</span>
-              </li>
-              <li className="flex justify-between py-3 border-b border-surface-variant/50">
-                <span className="text-on-surface-variant font-body text-body-md">Dietary Fiber</span>
-                <span className="text-primary font-bold font-body text-body-md">12g</span>
-              </li>
-              <li className="flex justify-between py-3 border-b border-surface-variant/50">
-                <span className="text-on-surface-variant font-body text-body-md">Vitamin E</span>
-                <span className="text-primary font-bold font-body text-body-md">37% DV</span>
-              </li>
-            </ul>
           </div>
         </div>
       </div>

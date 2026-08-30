@@ -1,5 +1,8 @@
 export const STORE_PHONE = import.meta.env.VITE_STORE_PHONE || '9014060329';
 export const STORE_WHATSAPP = import.meta.env.VITE_STORE_WHATSAPP || STORE_PHONE;
+export const STORE_EMAIL = import.meta.env.VITE_STORE_EMAIL || 'contact@royaldryfruits.com';
+export const STORE_ADDRESS = import.meta.env.VITE_STORE_ADDRESS || 'Royal Dry Fruits Experience Store, Main Road, Pippara, Andhra Pradesh, India';
+export const STORE_NAME = import.meta.env.VITE_STORE_NAME || 'Royal Dry Fruits';
 
 /**
  * Returns formatted WhatsApp link with international country code (default: 91 for India)

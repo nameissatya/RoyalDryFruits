@@ -75,16 +75,26 @@ export default function CheckoutPage() {
   const storeLat = Number(storeSettings?.latitude)
   const storeLng = Number(storeSettings?.longitude)
 
-  // 2-Tier Distance evaluation
+  // Address & Distance evaluation
+  const isAddressConfirmed = calculatedDistance !== null || customerCoords !== null
   const isFreeDistanceZone = calculatedDistance !== null && calculatedDistance <= freeRadius
   const isStandardDistanceZone = calculatedDistance !== null && calculatedDistance > freeRadius && calculatedDistance <= maxServiceRadius
   const isOutsideServiceZone = calculatedDistance !== null && calculatedDistance > maxServiceRadius
   const isSubtotalEligible = freeDeliveryThreshold > 0 && subtotal >= freeDeliveryThreshold
 
-  // Delivery fee is 0 if within free radius OR if subtotal meets free delivery threshold
-  const effectiveDeliveryFee = (isFreeDistanceZone || isSubtotalEligible || items.length === 0)
+  // Default delivery fee is ₹0 (FREE). Delivery fee only activates after address/GPS confirmation:
+  // - If within free radius (<= freeRadius) OR subtotal >= threshold: ₹0 (FREE)
+  // - If standard zone (> freeRadius and <= maxServiceRadius): baseDeliveryCharge
+  // - If outside local range or before address confirmation: ₹0
+  const effectiveDeliveryFee = (
+    !isAddressConfirmed ||
+    isFreeDistanceZone ||
+    isSubtotalEligible ||
+    isOutsideServiceZone ||
+    items.length === 0
+  )
     ? 0
-    : (customerCoords ? baseDeliveryCharge : defaultDeliveryFee)
+    : baseDeliveryCharge
 
   const effectiveTotal = subtotal + effectiveDeliveryFee
 
@@ -101,7 +111,17 @@ export default function CheckoutPage() {
 
   const handleChange = (e) => {
     const { id, value } = e.target
-    setFormData((prev) => ({ ...prev, [id]: value }))
+    if (id === 'fullName') {
+      // Letters and spaces only, prevent numbers/symbols while typing
+      const lettersOnly = value.replace(/[^a-zA-Z\s]/g, '').slice(0, 50)
+      setFormData((prev) => ({ ...prev, [id]: lettersOnly }))
+    } else if (id === 'phone') {
+      // Digits only, max 10 digits, prevent alphabets/symbols while typing
+      const digitsOnly = value.replace(/\D/g, '').slice(0, 10)
+      setFormData((prev) => ({ ...prev, [id]: digitsOnly }))
+    } else {
+      setFormData((prev) => ({ ...prev, [id]: value }))
+    }
   }
 
   const handleDetectLocation = () => {
@@ -389,7 +409,7 @@ export default function CheckoutPage() {
                     id="fullName"
                     type="text"
                     required
-                    placeholder="e.g. Rajesh Kumar"
+                    placeholder="Enter your full name"
                     value={formData.fullName}
                     onChange={handleChange}
                     className="w-full bg-surface border border-outline-variant/50 rounded-lg px-4 py-3 font-body text-body-md text-on-surface outline-none focus:ring-2 focus:ring-surface-tint focus:border-surface-tint transition-all"
@@ -406,7 +426,7 @@ export default function CheckoutPage() {
                       id="phone"
                       type="tel"
                       required
-                      placeholder="98765 43210"
+                      placeholder="Enter 10-digit mobile number"
                       value={formData.phone}
                       onChange={handleChange}
                       className="w-full bg-surface border border-outline-variant/50 rounded-lg pl-14 pr-4 py-3 font-body text-body-md text-on-surface outline-none focus:ring-2 focus:ring-surface-tint focus:border-surface-tint transition-all"

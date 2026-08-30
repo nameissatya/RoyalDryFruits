@@ -100,8 +100,8 @@ export default function AuthModal() {
                     type="tel"
                     required
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="98765 43210"
+                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                    placeholder="Enter 10-digit mobile number"
                     className="w-full bg-surface border border-outline-variant/50 rounded-lg pl-12 pr-4 py-3 font-body text-body-md text-on-surface outline-none focus:ring-2 focus:ring-surface-tint focus:border-surface-tint transition-all"
                   />
                 </div>
@@ -131,7 +131,7 @@ export default function AuthModal() {
                   required
                   autoFocus
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 4))}
                   placeholder="• • • •"
                   className="w-full text-center text-2xl font-bold tracking-[0.5em] bg-surface-container border border-outline-variant/50 rounded-xl py-3.5 text-primary outline-none focus:border-secondary transition-all"
                 />

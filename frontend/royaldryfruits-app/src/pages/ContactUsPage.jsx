@@ -1,9 +1,16 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Phone, Mail, MapPin, MessageSquare, Send, CheckCircle2, Clock } from 'lucide-react'
-import { getWhatsAppLink, formatDisplayPhone, STORE_PHONE } from '../config/storeConfig'
+import { useCart } from '../context/CartContext'
+import { getWhatsAppLink, formatDisplayPhone, STORE_PHONE, STORE_EMAIL, STORE_ADDRESS, STORE_NAME } from '../config/storeConfig'
 
 export default function ContactUsPage() {
+  const { storeSettings } = useCart()
+  const activePhone = storeSettings?.phone || STORE_PHONE
+  const activeEmail = storeSettings?.email || STORE_EMAIL
+  const activeAddress = storeSettings?.address || STORE_ADDRESS
+  const activeStoreName = storeSettings?.storeName || STORE_NAME
+
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -11,10 +18,29 @@ export default function ContactUsPage() {
     subject: 'General Inquiry',
     message: '',
   })
+  const [formError, setFormError] = useState('')
   const [isSubmitted, setIsSubmitted] = useState(false)
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    setFormError('')
+
+    if (!formData.name.trim()) {
+      setFormError('Please enter your full name.')
+      return
+    }
+
+    const cleanPhone = formData.phone.replace(/\D/g, '')
+    if (!/^([6-9]\d{9})$/.test(cleanPhone)) {
+      setFormError('Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.')
+      return
+    }
+
+    if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      setFormError('Please enter a valid email address (e.g. name@domain.com).')
+      return
+    }
+
     setIsSubmitted(true)
   }
 
@@ -39,7 +65,7 @@ export default function ContactUsPage() {
           Contact Customer Support
         </h1>
         <p className="font-body text-body-md text-on-surface-variant">
-          Have a question about your order, bulk corporate gifting, or product recommendations? Get in touch with our expert team.
+          Have a question about your order, bulk corporate gifting, or product recommendations? Get in touch with our expert team at {activeStoreName}.
         </p>
       </div>
 
@@ -58,8 +84,8 @@ export default function ContactUsPage() {
               </div>
               <div>
                 <h4 className="font-body text-body-md font-bold text-primary">Customer Hotline</h4>
-                <a href={`tel:${STORE_PHONE}`} className="font-headline text-headline-xs text-secondary font-bold mt-0.5 hover:underline block">
-                  {formatDisplayPhone(STORE_PHONE)}
+                <a href={`tel:${activePhone}`} className="font-headline text-headline-xs text-secondary font-bold mt-0.5 hover:underline block">
+                  {formatDisplayPhone(activePhone)}
                 </a>
                 <p className="font-body text-body-xs text-on-surface-variant">Mon - Sun: 8:00 AM - 10:00 PM</p>
               </div>
@@ -74,7 +100,7 @@ export default function ContactUsPage() {
                 <h4 className="font-body text-body-md font-bold text-primary">WhatsApp Support</h4>
                 <p className="font-body text-body-xs text-on-surface-variant mt-0.5">Instant resolution & order tracking assistance</p>
                 <a
-                  href={getWhatsAppLink('Hi Royal Dry Fruits, I have an inquiry')}
+                  href={getWhatsAppLink(`Hi ${activeStoreName}, I have an inquiry`, activePhone)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-block mt-2 font-label text-xs font-bold text-emerald-700 hover:underline"
@@ -91,7 +117,9 @@ export default function ContactUsPage() {
               </div>
               <div>
                 <h4 className="font-body text-body-md font-bold text-primary">Email Support</h4>
-                <p className="font-body text-body-sm font-semibold text-primary mt-0.5">support@royaldryfruits.com</p>
+                <a href={`mailto:${activeEmail}`} className="font-body text-body-sm font-semibold text-primary mt-0.5 hover:underline block">
+                  {activeEmail}
+                </a>
                 <p className="font-body text-body-xs text-on-surface-variant">Responses within 2 business hours</p>
               </div>
             </div>
@@ -104,7 +132,7 @@ export default function ContactUsPage() {
               <div>
                 <h4 className="font-body text-body-md font-bold text-primary">Headquarters & Store</h4>
                 <p className="font-body text-body-xs text-on-surface-variant leading-relaxed">
-                  Plot 42, Hitech City Main Rd, Near Kothaguda Signal, Kondapur, Hyderabad - 500084
+                  {activeAddress}
                 </p>
               </div>
             </div>
@@ -123,7 +151,7 @@ export default function ContactUsPage() {
                   Message Sent Successfully!
                 </h3>
                 <p className="font-body text-body-md text-on-surface-variant max-w-md mx-auto mb-6">
-                  Thank you for reaching out to Royal Dry Fruits. Our support representative will contact you shortly.
+                  Thank you for reaching out to {activeStoreName}. Our support representative will contact you shortly.
                 </p>
                 <button
                   onClick={() => setIsSubmitted(false)}
@@ -138,6 +166,12 @@ export default function ContactUsPage() {
                   Send Us a Message
                 </h3>
 
+                {formError && (
+                  <div className="p-3.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold rounded-xl">
+                    {formError}
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block font-label text-label-sm text-on-surface-variant mb-1 font-semibold">
@@ -146,9 +180,9 @@ export default function ContactUsPage() {
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Satya"
+                      placeholder="Enter your full name"
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(0, 50) })}
                       className="w-full bg-surface border border-outline-variant/50 rounded-xl px-4 py-3 font-body text-body-md text-on-surface outline-none focus:border-secondary transition-all"
                     />
                   </div>
@@ -160,9 +194,9 @@ export default function ContactUsPage() {
                     <input
                       type="tel"
                       required
-                      placeholder="+91 98765 43210"
+                      placeholder="Enter 10-digit mobile number"
                       value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
                       className="w-full bg-surface border border-outline-variant/50 rounded-xl px-4 py-3 font-body text-body-md text-on-surface outline-none focus:border-secondary transition-all"
                     />
                   </div>
@@ -174,7 +208,7 @@ export default function ContactUsPage() {
                   </label>
                   <input
                     type="email"
-                    placeholder="name@example.com"
+                    placeholder="Enter your email address"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="w-full bg-surface border border-outline-variant/50 rounded-xl px-4 py-3 font-body text-body-md text-on-surface outline-none focus:border-secondary transition-all"

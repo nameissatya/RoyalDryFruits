@@ -120,21 +120,14 @@ export function CartProvider({ children }) {
     [storeSettings]
   )
 
-  // Dynamic delivery fee calculation:
-  // 1. If cart is empty -> 0
-  // 2. If subtotal >= freeDeliveryThreshold (when threshold > 0) -> 0 (Free Delivery)
-  // 3. Otherwise -> baseDeliveryCharge
+  // Default delivery fee is ₹0 (FREE). Distance-based delivery fee is evaluated at Checkout upon address confirmation.
   const deliveryFee = useMemo(() => {
-    if (items.length === 0) return 0
-    if (freeDeliveryThreshold > 0 && subtotal >= freeDeliveryThreshold) {
-      return 0
-    }
-    return baseDeliveryCharge
-  }, [items.length, subtotal, freeDeliveryThreshold, baseDeliveryCharge])
+    return 0
+  }, [])
 
   const isFreeDelivery = useMemo(
-    () => items.length > 0 && deliveryFee === 0,
-    [items.length, deliveryFee]
+    () => items.length > 0,
+    [items.length]
   )
 
   const amountNeededForFreeDelivery = useMemo(() => {

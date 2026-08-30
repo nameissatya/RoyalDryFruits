@@ -9,9 +9,9 @@ const features = [
   },
   {
     icon: Truck,
-    title: 'Local Delivery',
+    title: 'Local & Express Delivery',
     description:
-      'Fast, reliable local delivery within a 10km radius ensures your gifts arrive fresh and exactly on time.',
+      'Fast, reliable express delivery ensures your gift hampers arrive fresh and exactly on time.',
   },
   {
     icon: Sparkles,

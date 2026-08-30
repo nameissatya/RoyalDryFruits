@@ -747,7 +747,7 @@ export default function OrdersPage() {
                 <textarea
                   rows={3}
                   required
-                  placeholder="e.g. Item currently out of stock in warehouse..."
+                  placeholder="Enter cancellation reason..."
                   value={cancellationReason}
                   onChange={(e) => setCancellationReason(e.target.value)}
                   className="w-full bg-surface-container border border-outline-variant rounded-lg p-3 text-xs text-on-surface outline-none focus:border-red-500"

@@ -106,7 +106,7 @@ export default function CollectionPage() {
           Our Premium Collections
         </h1>
         <p className="font-body text-body-lg text-on-surface-variant max-w-2xl">
-          Explore our wide range of hand-picked nuts, dry fruits, berries, and artisanal hampers. Freshness and quality guaranteed with local 10km delivery.
+          Explore our wide range of hand-picked nuts, dry fruits, berries, and artisanal hampers. Freshness and premium quality guaranteed with express local delivery.
         </p>
       </div>
 

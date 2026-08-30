@@ -244,7 +244,7 @@ export default function ProductFormPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-md text-xs">
               <label className="space-y-1">
                 <span className="font-semibold">Product name *</span>
-                <input value={form.name} onChange={(event) => setField('name', event.target.value)} className={inputClass} placeholder="e.g. Premium California Almonds" required />
+                <input value={form.name} onChange={(event) => setField('name', event.target.value)} className={inputClass} placeholder="Enter product name" required />
               </label>
               <label className="space-y-1">
                 <span className="font-semibold">Category *</span>
@@ -261,8 +261,8 @@ export default function ProductFormPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md text-xs">
               <label className="space-y-1"><span className="font-semibold">Badge</span><input value={form.badge} onChange={(event) => setField('badge', event.target.value)} className={inputClass} placeholder="Bestseller" /></label>
               <label className="space-y-1"><span className="font-semibold">Origin</span><input value={form.origin} onChange={(event) => setField('origin', event.target.value)} className={inputClass} /></label>
-              <label className="space-y-1"><span className="font-semibold">Rating</span><input type="number" min="0" max="5" step="0.1" value={form.rating} onChange={(event) => setField('rating', event.target.value)} className={inputClass} /></label>
-              <label className="space-y-1"><span className="font-semibold">Reviews</span><input type="number" min="0" value={form.reviewsCount} onChange={(event) => setField('reviewsCount', event.target.value)} className={inputClass} /></label>
+              <label className="space-y-1"><span className="font-semibold">Rating</span><input type="text" value={form.rating} onChange={(event) => setField('rating', event.target.value.replace(/[^0-9.]/g, ''))} className={inputClass} placeholder="4.8" /></label>
+              <label className="space-y-1"><span className="font-semibold">Reviews</span><input type="text" value={form.reviewsCount} onChange={(event) => setField('reviewsCount', event.target.value.replace(/\D/g, ''))} className={inputClass} placeholder="120" /></label>
             </div>
           </section>
 
@@ -301,9 +301,9 @@ export default function ProductFormPage() {
               <tbody className="divide-y divide-outline-variant">
                 {form.variants.map((variant, index) => (
                   <tr key={variant.id || index}>
-                    <td className="p-sm"><input value={variant.weightLabel} onChange={(event) => setVariantField(index, 'weightLabel', event.target.value)} className={inputClass} placeholder="e.g. 250g" /></td>
-                    <td className="p-sm"><input type="number" min="0.01" step="0.01" value={variant.price} onChange={(event) => setVariantField(index, 'price', event.target.value)} className={inputClass} /></td>
-                    <td className="p-sm"><input type="number" min="0" value={variant.stockQuantity} onChange={(event) => setVariantField(index, 'stockQuantity', event.target.value)} className={inputClass} /></td>
+                    <td className="p-sm"><input value={variant.weightLabel} onChange={(event) => setVariantField(index, 'weightLabel', event.target.value)} className={inputClass} placeholder="Weight / size (500g, 1kg)" /></td>
+                    <td className="p-sm"><input type="text" value={variant.price} onChange={(event) => setVariantField(index, 'price', event.target.value.replace(/[^0-9.]/g, ''))} className={inputClass} placeholder="500" /></td>
+                    <td className="p-sm"><input type="text" value={variant.stockQuantity} onChange={(event) => setVariantField(index, 'stockQuantity', event.target.value.replace(/\D/g, ''))} className={inputClass} placeholder="10" /></td>
                     <td className="p-sm"><input value={variant.sku} onChange={(event) => setVariantField(index, 'sku', event.target.value)} className={`${inputClass} font-mono`} placeholder="Auto-generated if blank" /></td>
                     <td className="p-sm text-center"><input type="checkbox" checked={variant.isActive} onChange={(event) => setVariantField(index, 'isActive', event.target.checked)} className="h-4 w-4" /></td>
                     <td className="p-sm text-right"><button type="button" disabled={form.variants.length === 1} onClick={() => setForm((current) => ({ ...current, variants: current.variants.filter((_, currentIndex) => currentIndex !== index) }))} className="p-2 text-on-surface-variant hover:text-error disabled:opacity-30" title="Remove variant"><span className="material-symbols-outlined text-lg">delete</span></button></td>

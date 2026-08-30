@@ -123,22 +123,33 @@ export default function CategoriesPage() {
           </button>
         </div>
 
-        {/* Table matching Figma design */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[700px]">
-            <thead>
-              <tr className="border-b border-outline-variant bg-surface-container-low text-on-surface-variant font-semibold text-[11px] uppercase tracking-wider">
-                <th className="p-md font-medium">CATEGORY NAME</th>
-                <th className="p-md font-medium">PRODUCTS</th>
-                <th className="p-md font-medium">STATUS</th>
-                <th className="p-md font-medium">CREATED DATE</th>
-                <th className="p-md font-medium text-right">ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-outline-variant">
-              {filteredCategories.map((cat) => (
-                <tr
-                  key={cat.id}
+        {isCategoriesLoading ? (
+          <div className="py-16 text-center">
+            <span className="material-symbols-outlined text-4xl text-primary animate-spin">progress_activity</span>
+            <p className="text-xs text-on-surface-variant mt-2">Loading categories...</p>
+          </div>
+        ) : filteredCategories.length === 0 ? (
+          <div className="py-16 text-center space-y-sm">
+            <span className="material-symbols-outlined text-5xl text-outline">category</span>
+            <h2 className="font-bold">No categories found</h2>
+            <p className="text-xs text-on-surface-variant">Add your first product category using the button above.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[700px]">
+              <thead>
+                <tr className="border-b border-outline-variant bg-surface-container-low text-on-surface-variant font-semibold text-[11px] uppercase tracking-wider">
+                  <th className="p-md font-medium">CATEGORY NAME</th>
+                  <th className="p-md font-medium">PRODUCTS</th>
+                  <th className="p-md font-medium">STATUS</th>
+                  <th className="p-md font-medium">CREATED DATE</th>
+                  <th className="p-md font-medium text-right">ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-outline-variant">
+                {filteredCategories.map((cat) => (
+                  <tr
+                    key={cat.id}
                   className={`hover:bg-surface transition-colors group ${
                     categoryToDelete?.id === cat.id ? 'bg-surface-container-high border-l-4 border-error' : ''
                   }`}
@@ -185,6 +196,7 @@ export default function CategoriesPage() {
             </tbody>
           </table>
         </div>
+        )}
 
         {/* Footer matching Figma design */}
         <div className="p-md border-t border-outline-variant bg-surface flex items-center justify-between text-on-surface-variant text-xs">
@@ -215,7 +227,7 @@ export default function CategoriesPage() {
             <input
               type="text"
               required
-              placeholder="e.g., Almonds, Cashews, Dates"
+              placeholder="Enter category name"
               value={catName}
               onChange={(e) => setCatName(e.target.value)}
               className="w-full px-3 py-2 bg-surface border border-outline-variant rounded-lg text-on-surface outline-none focus:border-primary"

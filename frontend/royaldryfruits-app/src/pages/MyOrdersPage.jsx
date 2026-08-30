@@ -222,7 +222,13 @@ export default function MyOrdersPage() {
       </div>
 
       {/* Orders List Container */}
-      {filteredOrders.length === 0 ? (
+      {isSearching ? (
+        <div className="bg-surface-container rounded-2xl p-16 text-center border border-outline-variant/30 max-w-xl mx-auto my-8 flex flex-col items-center justify-center">
+          <Loader2 className="w-10 h-10 text-secondary animate-spin mb-4" />
+          <h3 className="font-headline text-headline-sm text-primary font-bold">Loading your orders...</h3>
+          <p className="font-body text-body-xs text-on-surface-variant mt-1">Fetching live purchase records</p>
+        </div>
+      ) : filteredOrders.length === 0 ? (
         <div className="bg-surface-container rounded-2xl p-12 text-center border border-outline-variant/30 max-w-xl mx-auto my-8">
           <div className="w-20 h-20 rounded-full bg-secondary-container/30 text-secondary mx-auto mb-4 flex items-center justify-center">
             <Lock className="w-10 h-10" />

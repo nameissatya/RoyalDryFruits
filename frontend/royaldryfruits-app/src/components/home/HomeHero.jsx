@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Banknote, MapPin, CheckCircle2, ShieldCheck } from 'lucide-react'
 import WhatsAppIcon from '../common/WhatsAppIcon'
+import { useCart } from '../../context/CartContext'
 import { getWhatsAppLink } from '../../config/storeConfig'
 import heroImg from '../../assets/images/home-hero.jpg'
 
@@ -12,6 +13,9 @@ const trustBadges = [
 ]
 
 export default function HomeHero() {
+  const { freeDeliveryRadius } = useCart()
+  const activeRadius = freeDeliveryRadius || 10
+
   const handleWhatsAppOrder = () => {
     const link = getWhatsAppLink('Hi Royal Dry Fruits! I would like to place an order.')
     window.open(link, '_blank')
@@ -35,7 +39,7 @@ export default function HomeHero() {
         </span>
 
         <h1 className="font-display text-display-lg-mobile md:text-display-lg text-primary mb-6 max-w-4xl mx-auto drop-shadow-sm">
-          Fresh Dry Fruits Delivered Within 10km
+          Fresh Dry Fruits Delivered Within {activeRadius}km Free Zone
         </h1>
 
         <p className="font-body text-body-lg text-on-surface-variant mb-10 max-w-2xl mx-auto">

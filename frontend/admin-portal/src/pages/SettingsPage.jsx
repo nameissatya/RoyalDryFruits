@@ -83,7 +83,7 @@ export default function SettingsPage() {
               <label className="block font-semibold text-on-surface mb-2">Store Name</label>
               <input
                 type="text"
-                placeholder="Enter store name (e.g. Royal Dry Fruits)"
+                placeholder="Enter store name"
                 value={formData.storeName}
                 onChange={(e) => setFormData({ ...formData, storeName: e.target.value })}
                 className="w-full bg-surface border border-surface-variant rounded-lg px-4 py-2 text-on-surface focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-colors"
@@ -92,10 +92,10 @@ export default function SettingsPage() {
             <div>
               <label className="block font-semibold text-on-surface mb-2">Business Phone Number</label>
               <input
-                type="text"
-                placeholder="Enter phone number (e.g. +91 90140 60329)"
+                type="tel"
+                placeholder="Enter 10-digit phone number"
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
                 className="w-full bg-surface border border-surface-variant rounded-lg px-4 py-2 text-on-surface focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-colors"
               />
             </div>
@@ -113,7 +113,7 @@ export default function SettingsPage() {
               <label className="block font-semibold text-on-surface mb-2">Business Email Address</label>
               <input
                 type="email"
-                placeholder="Enter official email (e.g. contact@yourstore.com)"
+                placeholder="Enter store email address"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="w-full bg-surface border border-surface-variant rounded-lg px-4 py-2 text-on-surface focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-colors"
@@ -128,22 +128,20 @@ export default function SettingsPage() {
               <div>
                 <label className="block text-on-surface-variant font-medium mb-1">Latitude</label>
                 <input
-                  type="number"
-                  step="any"
-                  placeholder="e.g. 16.8524"
+                  type="text"
+                  placeholder="Enter latitude"
                   value={formData.latitude}
-                  onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, latitude: e.target.value.replace(/[^0-9.-]/g, '') })}
                   className="w-full bg-surface border border-surface-variant rounded-lg px-4 py-2 text-on-surface focus:outline-none focus:border-primary-container"
                 />
               </div>
               <div>
                 <label className="block text-on-surface-variant font-medium mb-1">Longitude</label>
                 <input
-                  type="number"
-                  step="any"
-                  placeholder="e.g. 81.6749"
+                  type="text"
+                  placeholder="Enter longitude"
                   value={formData.longitude}
-                  onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, longitude: e.target.value.replace(/[^0-9.-]/g, '') })}
                   className="w-full bg-surface border border-surface-variant rounded-lg px-4 py-2 text-on-surface focus:outline-none focus:border-primary-container"
                 />
               </div>
@@ -167,10 +165,10 @@ export default function SettingsPage() {
               <p className="text-outline text-[11px] mb-2">Customers within this radius get 100% Free Delivery.</p>
               <div className="relative">
                 <input
-                  type="number"
-                  placeholder="e.g. 10"
+                  type="text"
+                  placeholder="Enter free delivery radius"
                   value={formData.freeDeliveryRadius}
-                  onChange={(e) => setFormData({ ...formData, freeDeliveryRadius: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, freeDeliveryRadius: e.target.value.replace(/[^0-9.]/g, '') })}
                   className="w-full bg-surface border border-surface-variant rounded-lg pl-4 pr-12 py-2 text-on-surface focus:outline-none focus:border-primary-container"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-semibold">km</span>
@@ -182,10 +180,10 @@ export default function SettingsPage() {
               <p className="text-outline text-[11px] mb-2">Direct COD range. (Beyond this directs to WhatsApp Courier).</p>
               <div className="relative">
                 <input
-                  type="number"
-                  placeholder="e.g. 25"
+                  type="text"
+                  placeholder="Enter max service range"
                   value={formData.deliveryRadius}
-                  onChange={(e) => setFormData({ ...formData, deliveryRadius: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, deliveryRadius: e.target.value.replace(/[^0-9.]/g, '') })}
                   className="w-full bg-surface border border-surface-variant rounded-lg pl-4 pr-12 py-2 text-on-surface focus:outline-none focus:border-primary-container"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-semibold">km</span>
@@ -198,10 +196,10 @@ export default function SettingsPage() {
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">₹</span>
                 <input
-                  type="number"
-                  placeholder="e.g. 50"
+                  type="text"
+                  placeholder="Enter delivery charge"
                   value={formData.deliveryCharge}
-                  onChange={(e) => setFormData({ ...formData, deliveryCharge: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, deliveryCharge: e.target.value.replace(/[^0-9.]/g, '') })}
                   className="w-full bg-surface border border-surface-variant rounded-lg pl-8 pr-4 py-2 text-on-surface focus:outline-none focus:border-primary-container"
                 />
               </div>
@@ -213,10 +211,10 @@ export default function SettingsPage() {
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">₹</span>
                 <input
-                  type="number"
-                  placeholder="e.g. 999"
+                  type="text"
+                  placeholder="Enter free delivery cart total"
                   value={formData.freeDeliveryThreshold}
-                  onChange={(e) => setFormData({ ...formData, freeDeliveryThreshold: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, freeDeliveryThreshold: e.target.value.replace(/[^0-9.]/g, '') })}
                   className="w-full bg-surface border border-surface-variant rounded-lg pl-8 pr-4 py-2 text-on-surface focus:outline-none focus:border-primary-container"
                 />
               </div>
@@ -228,10 +226,10 @@ export default function SettingsPage() {
               <div className="relative max-w-md">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">₹</span>
                 <input
-                  type="number"
-                  placeholder="e.g. 200"
+                  type="text"
+                  placeholder="Enter minimum order value"
                   value={formData.minOrderValue}
-                  onChange={(e) => setFormData({ ...formData, minOrderValue: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, minOrderValue: e.target.value.replace(/[^0-9.]/g, '') })}
                   className="w-full bg-surface border border-surface-variant rounded-lg pl-8 pr-4 py-2 text-on-surface focus:outline-none focus:border-primary-container"
                 />
               </div>

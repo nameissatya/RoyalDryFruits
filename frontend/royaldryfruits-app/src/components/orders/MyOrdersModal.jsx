@@ -143,9 +143,9 @@ export default function MyOrdersModal({ isOpen, onClose }) {
           <form onSubmit={handleSearchByPhone} className="flex gap-2 items-center">
             <input
               type="tel"
-              placeholder="Enter your phone number to find orders..."
+              placeholder="Enter 10-digit phone number to find orders..."
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
               className="flex-1 bg-surface border border-outline-variant/50 rounded-xl px-4 py-2 text-xs font-body text-on-surface outline-none focus:border-secondary"
             />
             <button

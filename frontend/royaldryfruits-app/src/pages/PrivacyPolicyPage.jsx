@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Shield, Lock, Eye, FileText, CheckCircle2 } from 'lucide-react'
+import { STORE_EMAIL, STORE_NAME } from '../config/storeConfig'
 
 export default function PrivacyPolicyPage() {
   return (
@@ -23,43 +24,47 @@ export default function PrivacyPolicyPage() {
           Privacy Policy
         </h1>
         <p className="font-body text-body-md text-on-surface-variant">
-          Last updated: August 8, 2026 • Royal Dry Fruits respects your personal data privacy and maintains strict security controls.
+          How {STORE_NAME} collects, handles, and protects your personal customer details.
         </p>
       </div>
 
+      {/* Policy Content Sections */}
       <div className="space-y-8 max-w-4xl mx-auto font-body text-body-md text-on-surface-variant">
         <section className="bg-surface-container rounded-2xl p-6 md:p-8 border border-outline-variant/30 space-y-3">
           <h2 className="font-headline text-headline-sm text-primary font-bold flex items-center gap-2">
-            <Eye className="w-5 h-5 text-secondary" />
+            <Lock className="w-5 h-5 text-secondary" />
             1. Information We Collect
           </h2>
           <p className="leading-relaxed">
-            When you place an order or create an account with Royal Dry Fruits, we collect only essential personal details required to process and deliver your order safely:
+            When placing an order or registering, we collect only essential fulfillment data: your full name, 10-digit mobile number for OTP login & dispatch updates, delivery address, and order items.
           </p>
-          <ul className="space-y-2 pt-2 text-sm">
-            <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" /> <strong>Contact Information:</strong> Name, mobile phone number, and optional email address.</li>
-            <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" /> <strong>Delivery Details:</strong> Street address, landmark, pincode, and GPS coordinates (if location detection is authorized).</li>
-            <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" /> <strong>Order History:</strong> Purchased items, preferred weight variants, and order timestamps.</li>
+        </section>
+
+        <section className="bg-surface-container rounded-2xl p-6 md:p-8 border border-outline-variant/30 space-y-3">
+          <h2 className="font-headline text-headline-sm text-primary font-bold flex items-center gap-2">
+            <Eye className="w-5 h-5 text-secondary" />
+            2. How We Use Your Data
+          </h2>
+          <ul className="space-y-2">
+            <li className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Accurate doorstep dispatch and GPS distance validation</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Order confirmation and status notifications via SMS/WhatsApp</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>We never sell, rent, or trade your personal information to third parties</span>
+            </li>
           </ul>
         </section>
 
         <section className="bg-surface-container rounded-2xl p-6 md:p-8 border border-outline-variant/30 space-y-3">
           <h2 className="font-headline text-headline-sm text-primary font-bold flex items-center gap-2">
-            <Lock className="w-5 h-5 text-secondary" />
-            2. How We Use Your Data
-          </h2>
-          <p className="leading-relaxed">
-            Your information is used strictly to fulfill your dry fruit orders, send delivery updates via SMS/WhatsApp, and provide customer support.
-          </p>
-          <p className="leading-relaxed font-bold text-primary">
-            🔒 We NEVER sell, rent, or trade your mobile phone number or personal details to third-party telemarketers or external advertisers.
-          </p>
-        </section>
-
-        <section className="bg-surface-container rounded-2xl p-6 md:p-8 border border-outline-variant/30 space-y-3">
-          <h2 className="font-headline text-headline-sm text-primary font-bold flex items-center gap-2">
             <Shield className="w-5 h-5 text-secondary" />
-            3. Data Protection & Security
+            3. Data Storage & Security
           </h2>
           <p className="leading-relaxed">
             We store order records securely in encrypted PostgreSQL databases. Payment transactions are processed through RBI-compliant secure gateways. Cash on Delivery records are kept confidential.
@@ -69,10 +74,10 @@ export default function PrivacyPolicyPage() {
         <section className="bg-surface-container rounded-2xl p-6 md:p-8 border border-outline-variant/30 space-y-3">
           <h2 className="font-headline text-headline-sm text-primary font-bold flex items-center gap-2">
             <FileText className="w-5 h-5 text-secondary" />
-            4. Your Rights & Account Deletion
+            4. Your Rights & Contact
           </h2>
           <p className="leading-relaxed">
-            You have the right to request access to your stored order history or ask for complete erasure of your customer profile. To request data deletion, contact our Privacy Officer at <strong className="text-primary">privacy@royaldryfruits.com</strong>.
+            You have the right to request access to your stored order history or ask for complete erasure of your customer profile. To request assistance, contact our team at <strong className="text-primary">{STORE_EMAIL}</strong>.
           </p>
         </section>
       </div>
