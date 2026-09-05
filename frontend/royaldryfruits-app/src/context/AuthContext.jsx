@@ -1,6 +1,9 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import { STORE_PHONE, STORE_WHATSAPP, formatDisplayPhone } from '../config/storeConfig'
 
 const AuthContext = createContext()
+
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
@@ -17,50 +20,133 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  const sendOtp = async (phone) => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/auth/send-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone })
-      });
-      if (!response.ok) throw new Error('Failed to send OTP');
-      return await response.json();
-    } catch (err) {
-      console.error('Send OTP failed:', err);
-      throw err;
-    }
-  }
+  const loginWithPin = async (phone, pin) => {
+    const cleanPhone = String(phone).replace(/\D/g, '').slice(-10)
+    const response = await fetch(`${API_BASE}/auth/login-pin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: cleanPhone, pin: String(pin).trim() }),
+    })
 
-  const verifyOtp = async (phone, otp, fullName = '') => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/auth/verify-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, otp, fullName })
-      });
-      if (!response.ok) throw new Error('Failed to verify OTP');
-      
-      const data = await response.json();
-      
-      // We assume data has { token, email, role } based on our backend
-      const userData = {
-        name: fullName || 'Valued Customer',
-        email: data.email,
-        phone: phone,
-        isLoggedIn: true,
-        loginAt: new Date().toISOString(),
-        token: data.token,
-      }
-      
+    const data = await response.json().catch(() => ({}))
+
+    if (!response.ok) {
+      const errorMessage = data?.message || 'Invalid mobile number or PIN. Please try again.'
+      throw new Error(errorMessage)
+    }
+
+    const userData = {
+      name: data.name || 'Valued Customer',
+      phone: data.phone || cleanPhone,
+      email: data.email || null,
+      isLoggedIn: !data.mustChangePin,
+      loginAt: new Date().toISOString(),
+      token: data.token,
+      mustChangePin: Boolean(data.mustChangePin),
+    }
+
+    if (!data.mustChangePin) {
       setUser(userData)
       localStorage.setItem('royaldryfruits_auth_user', JSON.stringify(userData))
-      localStorage.setItem('royaldryfruits_customer_phone', phone)
-      
-      return userData
-    } catch (err) {
-      console.error('Verify OTP failed:', err);
-      throw err;
+      localStorage.setItem('royaldryfruits_customer_phone', cleanPhone)
+    }
+
+    return userData
+  }
+
+  const changePin = async (phone, oldPin, newPin) => {
+    const cleanPhone = String(phone).replace(/\D/g, '').slice(-10)
+    const cleanOldPin = String(oldPin).trim()
+    const cleanNewPin = String(newPin).trim()
+
+    const response = await fetch(`${API_BASE}/auth/change-pin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone: cleanPhone,
+        oldPin: cleanOldPin,
+        newPin: cleanNewPin,
+      }),
+    })
+
+    const data = await response.json().catch(() => ({}))
+
+    if (!response.ok) {
+      const errorMessage = data?.message || 'Failed to update PIN. Please check your details.'
+      throw new Error(errorMessage)
+    }
+
+    const userData = {
+      name: data.name || 'Valued Customer',
+      phone: data.phone || cleanPhone,
+      email: data.email || null,
+      isLoggedIn: true,
+      loginAt: new Date().toISOString(),
+      token: data.token,
+      mustChangePin: false,
+    }
+
+    setUser(userData)
+    localStorage.setItem('royaldryfruits_auth_user', JSON.stringify(userData))
+    localStorage.setItem('royaldryfruits_customer_phone', cleanPhone)
+
+    return userData
+  }
+
+  const registerWithPin = async (fullName, phone, pin) => {
+    const cleanPhone = String(phone).replace(/\D/g, '').slice(-10)
+    const cleanName = String(fullName).trim()
+    const cleanPin = String(pin).trim()
+
+    const response = await fetch(`${API_BASE}/auth/register-pin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fullName: cleanName,
+        phone: cleanPhone,
+        pin: cleanPin,
+      }),
+    })
+
+    const data = await response.json().catch(() => ({}))
+
+    if (!response.ok) {
+      const errorMessage = data?.message || 'Registration failed. Please check your details.'
+      throw new Error(errorMessage)
+    }
+
+    const userData = {
+      name: data.name || cleanName || 'Valued Customer',
+      phone: data.phone || cleanPhone,
+      email: data.email || null,
+      isLoggedIn: true,
+      loginAt: new Date().toISOString(),
+      token: data.token,
+    }
+
+    setUser(userData)
+    localStorage.setItem('royaldryfruits_auth_user', JSON.stringify(userData))
+    localStorage.setItem('royaldryfruits_customer_phone', cleanPhone)
+
+    return userData
+  }
+
+  const getForgotPinInfo = async (phone) => {
+    const cleanPhone = String(phone || '').replace(/\D/g, '').slice(-10)
+    try {
+      const response = await fetch(`${API_BASE}/auth/forgot-pin/${cleanPhone || '0'}`)
+      if (response.ok) {
+        return await response.json()
+      }
+    } catch (e) {
+      console.warn('Could not fetch forgot pin info from API:', e)
+    }
+    return {
+      phone: cleanPhone,
+      supportPhone: formatDisplayPhone(STORE_PHONE),
+      supportWhatsApp: STORE_WHATSAPP,
+      message: 'Please contact support to reset your PIN.',
+      isRegistered: false,
     }
   }
 
@@ -69,7 +155,6 @@ export function AuthProvider({ children }) {
     try {
       localStorage.removeItem('royaldryfruits_auth_user')
       localStorage.removeItem('royaldryfruits_customer_phone')
-      localStorage.removeItem('royaldryfruits_customer_orders')
     } catch (e) {
       console.warn('LocalStorage remove error:', e)
     }
@@ -83,8 +168,10 @@ export function AuthProvider({ children }) {
       value={{
         user,
         isLoggedIn: Boolean(user?.isLoggedIn),
-        sendOtp,
-        verifyOtp,
+        loginWithPin,
+        changePin,
+        registerWithPin,
+        getForgotPinInfo,
         logout,
         isAuthModalOpen,
         openAuthModal,

@@ -3,6 +3,7 @@ import { fetchCategoriesApi, createCategoryApi, updateCategoryApi, deleteCategor
 import { fetchProductsApi, createProductApi, updateProductApi, deleteProductApi } from '../services/productApi';
 import { fetchOrdersApi, updateOrderStatusApi } from '../services/orderApi';
 import { fetchSettingsApi, updateSettingsApi } from '../services/settingsApi';
+import { fetchCustomersApi, resetCustomerPinApi, unlockCustomerApi } from '../services/customerApi';
 import { resolveImageUrl } from '../services/apiConfig';
 
 const AdminContext = createContext();
@@ -36,6 +37,7 @@ export function AdminProvider({ children }) {
   const [isCategoriesLoading, setIsCategoriesLoading] = useState(false);
   const [isProductsLoading, setIsProductsLoading] = useState(false);
   const [isOrdersLoading, setIsOrdersLoading] = useState(false);
+  const [isCustomersLoading, setIsCustomersLoading] = useState(false);
   const [isSettingsLoading, setIsSettingsLoading] = useState(false);
 
   const showToast = (message) => {
@@ -68,14 +70,13 @@ export function AdminProvider({ children }) {
             count: c.productCount || 0,
             isActive: c.isActive !== false,
             createdAt: c.createdAt,
+            color: 'bg-primary-container text-white',
+            image: c.imageUrl ? resolveImageUrl(c.imageUrl) : null,
           };
         }));
-      } else {
-        setCategories([]);
       }
     } catch (err) {
-      console.warn('API connection error for categories:', err);
-      setCategories([]);
+      console.warn('API error, using local categories fallback:', err);
     } finally {
       setIsCategoriesLoading(false);
     }
@@ -88,31 +89,44 @@ export function AdminProvider({ children }) {
       const data = await fetchProductsApi();
       if (Array.isArray(data)) {
         setProducts(data.map(p => {
-          const firstVariant = p.variants && p.variants.length > 0 ? p.variants[0] : {};
+          const mainVariant = (p.variants && p.variants.length > 0) ? p.variants[0] : {};
           return {
             id: p.id,
-            categoryId: p.categoryId,
-            category: p.categoryName || 'General',
             name: p.name,
-            sku: firstVariant.sku || `PRD-${p.id.substring(0, 4)}`,
-            price: firstVariant.price || 0,
-            stock: firstVariant.stockQuantity || 0,
-            status: p.isActive ? 'Active' : 'Out of Stock',
-            img: p.imageUrl ? resolveImageUrl(p.imageUrl) : 'https://images.unsplash.com/photo-1508061252222-1d5f3083e589?w=150&auto=format&fit=crop&q=60',
-            origin: p.origin || 'India',
-            isFeatured: p.isFeatured,
-            variants: p.variants || [],
+            category: p.categoryName || 'General',
+            categoryId: p.categoryId,
+            price: `₹ ${mainVariant.price || 0}`,
+            priceNumeric: mainVariant.price || 0,
+            stock: mainVariant.stockQuantity ? `${mainVariant.stockQuantity} pkts` : 'In Stock',
+            stockCount: mainVariant.stockQuantity || 0,
+            sku: mainVariant.sku || `RDF-${p.name.substring(0, 3).toUpperCase()}`,
+            image: p.imageUrl ? resolveImageUrl(p.imageUrl) : null,
+            imageUrl: p.imageUrl ? resolveImageUrl(p.imageUrl) : null,
+            description: p.description || '',
+            tags: p.tags ? p.tags.split(',').map(t => t.trim()) : ['Premium'],
+            isActive: p.isActive !== false,
+            isFeatured: p.isFeatured || false,
+            badge: p.badge || '',
+            variants: (p.variants || []).map(v => ({
+              id: v.id,
+              weight: v.weightLabel || '500g',
+              weightLabel: v.weightLabel || '500g',
+              price: v.price || 0,
+              originalPrice: v.originalPrice || 0,
+              stock: v.stockQuantity || 0,
+              sku: v.sku || '',
+            }))
           };
         }));
       }
     } catch (err) {
-      console.warn('API connection offline for products, using local data fallback.', err);
+      console.warn('API error, using local products fallback:', err);
     } finally {
       setIsProductsLoading(false);
     }
   };
 
-  // Helper to format order status string safely
+  // Helper to parse order status
   const parseOrderStatus = (status, statusLabel) => {
     if (typeof status === 'number') {
       const statusMap = {
@@ -133,59 +147,121 @@ export function AdminProvider({ children }) {
     return s;
   };
 
-  // Helper to derive customer profiles dynamically from orders
-  const deriveCustomers = (ordersList) => {
-    if (!Array.isArray(ordersList) || ordersList.length === 0) return [];
+  // Helper to derive customer profiles dynamically from orders and merge with registered users
+  const deriveCustomers = (ordersList, registeredUsers = []) => {
     const customerMap = new Map();
 
-    ordersList.forEach(o => {
-      const key = (o.phone && o.phone !== 'N/A') ? o.phone.trim() : (o.customer || 'Guest').trim();
-      if (!customerMap.has(key)) {
-        const name = o.customer || 'Guest Customer';
-        const words = name.split(' ').filter(Boolean);
-        const initials = words.length > 1
-          ? (words[0][0] + words[1][0]).toUpperCase()
-          : (words[0] ? words[0].substring(0, 2).toUpperCase() : 'CU');
+    // First register all real DB users
+    (registeredUsers || []).forEach(u => {
+      const digits = (u.phone || '').replace(/\D/g, '').slice(-10);
+      const key = digits || u.id;
+      const name = u.name || 'Valued Customer';
+      const words = name.split(' ').filter(Boolean);
+      const initials = words.length > 1
+        ? (words[0][0] + words[1][0]).toUpperCase()
+        : (words[0] ? words[0].substring(0, 2).toUpperCase() : 'CU');
 
-        customerMap.set(key, {
-          id: key,
-          name: name,
-          initials: initials,
-          phone: o.phone || 'N/A',
-          email: o.email || 'N/A',
-          address: o.address || 'N/A',
-          ordersCount: 1,
-          totalSpentNumeric: typeof o.total === 'number' ? o.total : 0,
-          lastOrder: o.date || 'Recently',
-          joined: o.date || 'Recently',
-          membership: 'Royal Member',
-          recentOrders: [
-            {
-              id: o.id,
-              date: o.date || 'Today',
-              amount: typeof o.total === 'number' ? `₹ ${o.total.toLocaleString('en-IN')}` : String(o.total || '₹ 0'),
-              status: o.status || 'Pending'
-            }
-          ]
-        });
-      } else {
-        const existing = customerMap.get(key);
-        existing.ordersCount += 1;
-        existing.totalSpentNumeric += (typeof o.total === 'number' ? o.total : 0);
-        existing.recentOrders.push({
-          id: o.id,
-          date: o.date || 'Today',
-          amount: typeof o.total === 'number' ? `₹ ${o.total.toLocaleString('en-IN')}` : String(o.total || '₹ 0'),
-          status: o.status || 'Pending'
-        });
-      }
+      customerMap.set(key, {
+        id: u.id,
+        userId: u.id,
+        name: name,
+        initials: initials,
+        phone: u.phone && u.phone !== 'N/A' ? (u.phone.startsWith('+91') ? u.phone : `+91 ${u.phone}`) : 'N/A',
+        rawPhone: digits,
+        email: u.email || 'N/A',
+        address: 'Registered Customer',
+        ordersCount: u.ordersCount || 0,
+        totalSpentNumeric: u.totalSpent || 0,
+        lastOrder: u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : 'Recently',
+        joined: u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : 'Recently',
+        membership: 'Verified Account',
+        isRegistered: true,
+        isLocked: u.isLocked || false,
+        failedLoginAttempts: u.failedLoginAttempts || 0,
+        lockoutEndUtc: u.lockoutEndUtc || null,
+        recentOrders: []
+      });
     });
+
+    // Merge in orders
+    if (Array.isArray(ordersList)) {
+      ordersList.forEach(o => {
+        const digits = (o.phone || '').replace(/\D/g, '').slice(-10);
+        const key = digits || (o.customer || 'Guest').trim();
+
+        if (!customerMap.has(key)) {
+          const name = o.customer || 'Guest Customer';
+          const words = name.split(' ').filter(Boolean);
+          const initials = words.length > 1
+            ? (words[0][0] + words[1][0]).toUpperCase()
+            : (words[0] ? words[0].substring(0, 2).toUpperCase() : 'CU');
+
+          customerMap.set(key, {
+            id: key,
+            userId: null,
+            name: name,
+            initials: initials,
+            phone: o.phone || 'N/A',
+            rawPhone: digits,
+            email: o.email || 'N/A',
+            address: o.address || 'N/A',
+            ordersCount: 1,
+            totalSpentNumeric: typeof o.total === 'number' ? o.total : 0,
+            lastOrder: o.date || 'Recently',
+            joined: o.date || 'Recently',
+            membership: 'Guest Customer',
+            isRegistered: false,
+            isLocked: false,
+            failedLoginAttempts: 0,
+            recentOrders: [
+              {
+                id: o.id,
+                date: o.date || 'Today',
+                amount: typeof o.total === 'number' ? `₹ ${o.total.toLocaleString('en-IN')}` : String(o.total || '₹ 0'),
+                status: o.status || 'Pending'
+              }
+            ]
+          });
+        } else {
+          const existing = customerMap.get(key);
+          if (!existing.isRegistered) {
+            existing.ordersCount += 1;
+            existing.totalSpentNumeric += (typeof o.total === 'number' ? o.total : 0);
+          }
+          if (o.address && o.address !== 'N/A' && o.address !== 'Local Pickup') {
+            existing.address = o.address;
+          }
+          existing.recentOrders.push({
+            id: o.id,
+            date: o.date || 'Today',
+            amount: typeof o.total === 'number' ? `₹ ${o.total.toLocaleString('en-IN')}` : String(o.total || '₹ 0'),
+            status: o.status || 'Pending'
+          });
+        }
+      });
+    }
 
     return Array.from(customerMap.values()).map(c => ({
       ...c,
       orders: `${c.ordersCount} orders`,
       totalSpent: `₹ ${c.totalSpentNumeric.toLocaleString('en-IN')}`,
     }));
+  };
+
+  // Load customers from API
+  const loadCustomers = async () => {
+    setIsCustomersLoading(true);
+    try {
+      const data = await fetchCustomersApi();
+      if (Array.isArray(data)) {
+        setCustomers(deriveCustomers(orders, data));
+      }
+    } catch (err) {
+      console.warn('Customer API fallback to orders data:', err);
+      setCustomers(deriveCustomers(orders, []));
+    } finally {
+      setIsCustomersLoading(false);
+    }
   };
 
   // Load orders from API
@@ -214,12 +290,49 @@ export function AdminProvider({ children }) {
           })),
         }));
         setOrders(formattedOrders);
-        setCustomers(deriveCustomers(formattedOrders));
+
+        // Fetch real registered customers
+        try {
+          const registeredUsers = await fetchCustomersApi();
+          if (Array.isArray(registeredUsers)) {
+            setCustomers(deriveCustomers(formattedOrders, registeredUsers));
+          } else {
+            setCustomers(deriveCustomers(formattedOrders, []));
+          }
+        } catch {
+          setCustomers(deriveCustomers(formattedOrders, []));
+        }
       }
     } catch (err) {
       console.warn('API connection offline for orders, using local data fallback.', err);
     } finally {
       setIsOrdersLoading(false);
+    }
+  };
+
+  // Reset Customer PIN
+  const resetCustomerPin = async (customerId, newPin) => {
+    try {
+      await resetCustomerPinApi(customerId, newPin);
+      showToast('Customer PIN reset successfully! Lockout cleared.');
+      await loadCustomers();
+      return true;
+    } catch (err) {
+      showToast(`Error resetting PIN: ${err.message}`);
+      throw err;
+    }
+  };
+
+  // Unlock Customer
+  const unlockCustomer = async (customerId) => {
+    try {
+      await unlockCustomerApi(customerId);
+      showToast('Customer account unlocked successfully.');
+      await loadCustomers();
+      return true;
+    } catch (err) {
+      showToast(`Error unlocking account: ${err.message}`);
+      throw err;
     }
   };
 
@@ -245,12 +358,13 @@ export function AdminProvider({ children }) {
         }));
       }
     } catch (err) {
-      console.warn('API connection offline for settings:', err);
+      console.warn('Settings API offline, using local settings fallback:', err);
     } finally {
       setIsSettingsLoading(false);
     }
   };
 
+  // Initial load
   useEffect(() => {
     loadCategories();
     loadProducts();
@@ -258,125 +372,165 @@ export function AdminProvider({ children }) {
     loadSettings();
   }, []);
 
-  const addCategory = async (newCat) => {
+  const addCategory = async (catData) => {
     try {
-      const created = await createCategoryApi(newCat);
-      const formatted = {
-        id: created.id,
-        name: created.name,
-        description: created.description || '',
-        icon: created.icon || 'folder',
-        count: 0,
-        isActive: created.isActive,
-        createdAt: created.createdAt,
-      };
-      setCategories(prev => [formatted, ...prev]);
-      showToast(`Category "${created.name}" created in database.`);
-      return formatted;
+      const created = await createCategoryApi({
+        name: catData.name,
+        description: catData.description || '',
+        icon: catData.icon || 'gift',
+        imageUrl: catData.image || null,
+        isActive: catData.isActive !== false,
+      });
+      await loadCategories();
+      showToast(`Category "${catData.name}" created successfully.`);
+      return created;
     } catch (err) {
-      console.warn('API error, saving category locally fallback:', err);
-      const fallback = { ...newCat, id: String(Date.now()), count: 0 };
-      setCategories(prev => [...prev, fallback]);
-      showToast(`Category "${newCat.name}" added.`);
-      return fallback;
+      console.warn('API create error, using local state:', err);
+      const newCat = {
+        id: Date.now().toString(),
+        name: catData.name,
+        description: catData.description || '',
+        icon: catData.icon || 'gift',
+        count: 0,
+        isActive: catData.isActive !== false,
+        createdAt: new Date().toISOString(),
+        color: 'bg-primary-container text-white',
+        image: catData.image || null,
+      };
+      setCategories(prev => [newCat, ...prev]);
+      showToast(`Category "${catData.name}" added successfully.`);
+      return newCat;
     }
   };
 
-  const updateCategory = async (updatedCat) => {
+  const updateCategory = async (id, catData) => {
     try {
-      await updateCategoryApi(updatedCat.id, updatedCat);
-      setCategories(prev => prev.map(c => c.id === updatedCat.id ? { ...c, ...updatedCat } : c));
-      showToast(`Category "${updatedCat.name}" updated in database.`);
+      await updateCategoryApi(id, {
+        name: catData.name,
+        description: catData.description || '',
+        icon: catData.icon || 'gift',
+        imageUrl: catData.image || null,
+        isActive: catData.isActive !== false,
+      });
+      await loadCategories();
+      showToast(`Category "${catData.name}" updated successfully.`);
     } catch (err) {
-      console.warn('API error, updating category locally fallback:', err);
-      setCategories(prev => prev.map(c => c.id === updatedCat.id ? { ...c, ...updatedCat } : c));
-      showToast(`Category "${updatedCat.name}" updated.`);
+      console.warn('API update error, using local state:', err);
+      setCategories(prev => prev.map(c => c.id === id ? { ...c, ...catData } : c));
+      showToast(`Category "${catData.name}" updated successfully.`);
     }
   };
 
   const deleteCategory = async (id) => {
-    const cat = categories.find(c => c.id === id);
     try {
       await deleteCategoryApi(id);
-      setCategories(prev => prev.filter(c => c.id !== id));
-      if (cat) showToast(`Category "${cat.name}" deleted from database.`);
-    } catch (err) {
-      console.warn('API error, deleting category locally fallback:', err);
-      setCategories(prev => prev.filter(c => c.id !== id));
-      if (cat) showToast(`Category "${cat.name}" deleted.`);
-    }
-  };
-
-  const addProduct = async (newProduct) => {
-    const matchedCategory = categories.find(c => c.name.toLowerCase() === (newProduct.category || '').toLowerCase());
-    const categoryId = newProduct.categoryId || (matchedCategory ? matchedCategory.id : categories[0]?.id || '00000000-0000-0000-0000-000000000000');
-
-    try {
-      await createProductApi({ ...newProduct, categoryId });
-      await loadProducts();
       await loadCategories();
-      showToast(`Product "${newProduct.name}" created in database.`);
+      showToast('Category deleted successfully.');
     } catch (err) {
-      console.warn('API error, saving product locally fallback:', err);
-      const fallback = {
-        ...newProduct,
-        id: String(Date.now()),
-        sku: newProduct.sku || `PRD-${Math.floor(1000 + Math.random() * 9000)}`,
-        img: newProduct.img || 'https://images.unsplash.com/photo-1508061252222-1d5f3083e589?w=150&auto=format&fit=crop&q=60'
-      };
-      setProducts(prev => [fallback, ...prev]);
-
-      setCategories(prev => prev.map(c => 
-        c.name.toLowerCase() === newProduct.category.toLowerCase() 
-          ? { ...c, count: c.count + 1 } 
-          : c
-      ));
-
-      showToast(`Product "${fallback.name}" created.`);
+      console.warn('API delete error, using local state:', err);
+      setCategories(prev => prev.filter(c => c.id !== id));
+      showToast('Category removed successfully.');
     }
   };
 
-  const updateProduct = async (updatedProduct) => {
-    const matchedCategory = categories.find(c => c.name.toLowerCase() === (updatedProduct.category || '').toLowerCase());
-    const categoryId = updatedProduct.categoryId || (matchedCategory ? matchedCategory.id : categories[0]?.id);
-
+  const addProduct = async (prodData) => {
     try {
-      await updateProductApi(updatedProduct.id, { ...updatedProduct, categoryId });
+      const created = await createProductApi({
+        name: prodData.name,
+        categoryId: prodData.categoryId,
+        description: prodData.description || '',
+        badge: prodData.badge || '',
+        isFeatured: prodData.isFeatured || false,
+        isActive: prodData.isActive !== false,
+        tags: Array.isArray(prodData.tags) ? prodData.tags.join(',') : (prodData.tags || ''),
+        imageUrl: prodData.image || null,
+        variants: (prodData.variants || []).map(v => ({
+          weightLabel: v.weight || v.weightLabel || '500g',
+          price: Number(v.price) || 0,
+          originalPrice: Number(v.originalPrice) || 0,
+          stockQuantity: Number(v.stock) || 0,
+          sku: v.sku || '',
+          isDefault: true,
+        }))
+      });
       await loadProducts();
-      showToast(`Product "${updatedProduct.name}" updated in database.`);
+      showToast(`Product "${prodData.name}" created successfully.`);
+      return created;
     } catch (err) {
-      console.warn('API error, updating product locally fallback:', err);
-      setProducts(prev => prev.map(p => p.id === updatedProduct.id ? { ...p, ...updatedProduct } : p));
-      showToast(`Product "${updatedProduct.name}" updated.`);
+      console.warn('API error, saving product locally:', err);
+      const newProd = {
+        id: Date.now().toString(),
+        name: prodData.name,
+        category: prodData.category || 'General',
+        categoryId: prodData.categoryId,
+        price: `₹ ${prodData.variants?.[0]?.price || prodData.price || 0}`,
+        priceNumeric: prodData.variants?.[0]?.price || prodData.price || 0,
+        stock: `${prodData.variants?.[0]?.stock || prodData.stock || 0} pkts`,
+        stockCount: prodData.variants?.[0]?.stock || prodData.stock || 0,
+        sku: prodData.sku || `RDF-${prodData.name.substring(0, 3).toUpperCase()}`,
+        image: prodData.image || null,
+        imageUrl: prodData.image || null,
+        description: prodData.description || '',
+        tags: Array.isArray(prodData.tags) ? prodData.tags : [prodData.tags || 'Premium'],
+        isActive: prodData.isActive !== false,
+        isFeatured: prodData.isFeatured || false,
+        badge: prodData.badge || '',
+        variants: prodData.variants || [],
+      };
+      setProducts(prev => [newProd, ...prev]);
+      showToast(`Product "${prodData.name}" added successfully.`);
+      return newProd;
+    }
+  };
+
+  const updateProduct = async (id, prodData) => {
+    try {
+      await updateProductApi(id, {
+        name: prodData.name,
+        categoryId: prodData.categoryId,
+        description: prodData.description || '',
+        badge: prodData.badge || '',
+        isFeatured: prodData.isFeatured || false,
+        isActive: prodData.isActive !== false,
+        tags: Array.isArray(prodData.tags) ? prodData.tags.join(',') : (prodData.tags || ''),
+        imageUrl: prodData.image || null,
+        variants: (prodData.variants || []).map(v => ({
+          weightLabel: v.weight || v.weightLabel || '500g',
+          price: Number(v.price) || 0,
+          originalPrice: Number(v.originalPrice) || 0,
+          stockQuantity: Number(v.stock) || 0,
+          sku: v.sku || '',
+          isDefault: true,
+        }))
+      });
+      await loadProducts();
+      showToast(`Product "${prodData.name}" updated successfully.`);
+    } catch (err) {
+      console.warn('API error, updating product locally:', err);
+      setProducts(prev => prev.map(p => p.id === id ? { ...p, ...prodData } : p));
+      showToast(`Product "${prodData.name}" updated successfully.`);
     }
   };
 
   const deleteProduct = async (id) => {
-    const prod = products.find(p => p.id === id);
     try {
       await deleteProductApi(id);
-      setProducts(prev => prev.filter(p => p.id !== id));
-      if (prod) showToast(`Product "${prod.name}" deleted from database.`);
+      await loadProducts();
+      showToast('Product deleted successfully.');
     } catch (err) {
-      console.warn('API error, deleting product locally fallback:', err);
+      console.warn('API error, deleting product locally:', err);
       setProducts(prev => prev.filter(p => p.id !== id));
-      if (prod) showToast(`Product "${prod.name}" deleted.`);
+      showToast('Product deleted successfully.');
     }
   };
 
   const updateOrderStatus = async (orderId, newStatus, cancellationReason = '') => {
-    const target = orders.find(o => o.id === orderId || o.rawId === orderId);
-    const targetGuid = target?.rawId || orderId;
-
     try {
-      await updateOrderStatusApi(targetGuid, newStatus, cancellationReason);
-      setOrders(prev => prev.map(o => (o.id === orderId || o.rawId === orderId) 
-        ? { ...o, status: newStatus, cancellationReason: newStatus === 'Cancelled' ? cancellationReason : '' } 
-        : o
-      ));
+      await updateOrderStatusApi(orderId, newStatus, cancellationReason);
+      await loadOrders();
       showToast(`Order ${orderId} updated to ${newStatus}`);
     } catch (err) {
-      console.warn('API error, updating order status locally fallback:', err);
+      console.warn('API error, updating order locally fallback:', err);
       setOrders(prev => prev.map(o => (o.id === orderId || o.rawId === orderId) 
         ? { ...o, status: newStatus, cancellationReason: newStatus === 'Cancelled' ? cancellationReason : '' } 
         : o
@@ -403,6 +557,7 @@ export function AdminProvider({ children }) {
       loadCategories(),
       loadProducts(),
       loadOrders(),
+      loadCustomers(),
       loadSettings(),
     ]);
   };
@@ -420,6 +575,10 @@ export function AdminProvider({ children }) {
         isOrdersLoading,
         loadOrders,
         customers,
+        isCustomersLoading,
+        loadCustomers,
+        resetCustomerPin,
+        unlockCustomer,
         settings,
         isSettingsLoading,
         loadSettings,

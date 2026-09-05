@@ -8,7 +8,7 @@ public class User
 
     public string LastName { get; set; } = string.Empty;
 
-    public string Email { get; set; } = string.Empty;
+    public string? Email { get; set; }
 
     public string? Phone { get; set; }
 
@@ -19,6 +19,16 @@ public class User
     public string? ProfilePictureUrl { get; set; }
 
     public string? PasswordHash { get; set; }
+
+    public int FailedLoginAttempts { get; set; } = 0;
+
+    public DateTime? LockoutEndUtc { get; set; }
+
+    public DateTime? LastLoginAt { get; set; }
+
+    public bool IsActive { get; set; } = true;
+
+    public bool MustChangePin { get; set; } = false;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

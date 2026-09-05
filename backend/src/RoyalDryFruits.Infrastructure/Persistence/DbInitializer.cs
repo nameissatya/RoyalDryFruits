@@ -17,6 +17,13 @@ public static class DbInitializer
                 ALTER TABLE ""Orders"" ADD COLUMN IF NOT EXISTS ""CancellationReason"" text;
                 ALTER TABLE ""StoreSettings"" ADD COLUMN IF NOT EXISTS ""DeliveryRadius"" double precision NOT NULL DEFAULT 0.0;
                 ALTER TABLE ""StoreSettings"" ADD COLUMN IF NOT EXISTS ""FreeDeliveryRadius"" double precision NOT NULL DEFAULT 0.0;
+                ALTER TABLE ""Users"" ADD COLUMN IF NOT EXISTS ""FailedLoginAttempts"" integer NOT NULL DEFAULT 0;
+                ALTER TABLE ""Users"" ADD COLUMN IF NOT EXISTS ""LockoutEndUtc"" timestamp with time zone;
+                ALTER TABLE ""Users"" ADD COLUMN IF NOT EXISTS ""LastLoginAt"" timestamp with time zone;
+                ALTER TABLE ""Users"" ADD COLUMN IF NOT EXISTS ""IsActive"" boolean NOT NULL DEFAULT true;
+                ALTER TABLE ""Users"" ADD COLUMN IF NOT EXISTS ""MustChangePin"" boolean NOT NULL DEFAULT false;
+                ALTER TABLE ""Users"" ALTER COLUMN ""Email"" DROP NOT NULL;
+                UPDATE ""Users"" SET ""Email"" = NULL WHERE ""Email"" LIKE '%@royaldryfruits.com';
             ");
         }
         catch (Exception ex)

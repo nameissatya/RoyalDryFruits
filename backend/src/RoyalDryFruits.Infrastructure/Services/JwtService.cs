@@ -18,15 +18,24 @@ public class JwtService
 
     public string GenerateToken(User user)
     {
-        var claims = new[]
+        var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}".Trim()),
             new Claim(ClaimTypes.Role, "Customer")
         };
 
-        return BuildToken(claims);
+        if (!string.IsNullOrWhiteSpace(user.Phone))
+        {
+            claims.Add(new Claim(ClaimTypes.MobilePhone, user.Phone));
+        }
+
+        if (!string.IsNullOrWhiteSpace(user.Email))
+        {
+            claims.Add(new Claim(ClaimTypes.Email, user.Email));
+        }
+
+        return BuildToken(claims.ToArray());
     }
 
     public string GenerateAdminToken(AdminUser admin)

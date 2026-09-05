@@ -15,6 +15,106 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
+    /// <summary>
+    /// Register a new customer with Name, Mobile Number, and 4/6-digit PIN
+    /// </summary>
+    [HttpPost("register-pin")]
+    public async Task<IActionResult> RegisterWithPin([FromBody] CustomerRegisterWithPinRequest request)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var result = await _authService.RegisterWithPinAsync(request);
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Sign in an existing customer using Mobile Number + PIN
+    /// </summary>
+    [HttpPost("login-pin")]
+    public async Task<IActionResult> LoginWithPin([FromBody] CustomerPinLoginRequest request)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var result = await _authService.LoginWithPinAsync(request);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return StatusCode(429, new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Update/reset PIN using temporary or current PIN
+    /// </summary>
+    [HttpPost("change-pin")]
+    public async Task<IActionResult> ChangePin([FromBody] ChangePinRequest request)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var result = await _authService.ChangePinAsync(request);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return StatusCode(429, new { message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Get help and support contact options for Forgot PIN
+    /// </summary>
+    [HttpGet("forgot-pin/{phone}")]
+    public async Task<IActionResult> GetForgotPinInfo(string phone)
+    {
+        var result = await _authService.GetForgotPinInfoAsync(phone);
+        return Ok(result);
+    }
+
+    // ==========================================
+    // BACKWARD COMPATIBLE & LEGACY ENDPOINTS
+    // ==========================================
+
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest request)
     {
