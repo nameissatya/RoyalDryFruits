@@ -53,6 +53,11 @@ public class OrdersController : ControllerBase
             Items = new List<OrderItem>()
         };
 
+        var productImages = await _db.Products
+            .AsNoTracking()
+            .Where(p => !string.IsNullOrEmpty(p.ImageUrl))
+            .ToDictionaryAsync(p => p.Name.Trim().ToLower(), p => p.ImageUrl!);
+
         foreach (var item in req.Items)
         {
             Guid? validVariantId = null;
@@ -62,6 +67,18 @@ public class OrdersController : ControllerBase
                 if (variantExists)
                 {
                     validVariantId = item.ProductVariantId.Value;
+                }
+            }
+
+            if (!validVariantId.HasValue && !string.IsNullOrWhiteSpace(item.ProductName))
+            {
+                var cleanName = item.ProductName.Trim().ToLower();
+                var matchedVariant = await _db.ProductVariants
+                    .Include(pv => pv.Product)
+                    .FirstOrDefaultAsync(pv => pv.Product.Name.ToLower() == cleanName || cleanName.Contains(pv.Product.Name.ToLower()));
+                if (matchedVariant != null)
+                {
+                    validVariantId = matchedVariant.Id;
                 }
             }
 
@@ -103,7 +120,8 @@ public class OrdersController : ControllerBase
                 WeightLabel = i.WeightLabel,
                 UnitPrice = i.UnitPrice,
                 Quantity = i.Quantity,
-                TotalPrice = i.TotalPrice
+                TotalPrice = i.TotalPrice,
+                Image = ResolveItemImage(i, productImages)
             }).ToList()
         };
 
@@ -113,8 +131,12 @@ public class OrdersController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllOrders()
     {
+        var productImages = await GetProductImageLookupAsync();
+
         var orders = await _db.Orders
             .Include(x => x.Items)
+                .ThenInclude(i => i.ProductVariant!)
+                    .ThenInclude(pv => pv.Product)
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync();
 
@@ -142,7 +164,8 @@ public class OrdersController : ControllerBase
                 WeightLabel = i.WeightLabel,
                 UnitPrice = i.UnitPrice,
                 Quantity = i.Quantity,
-                TotalPrice = i.TotalPrice
+                TotalPrice = i.TotalPrice,
+                Image = ResolveItemImage(i, productImages)
             }).ToList()
         }).ToList();
 
@@ -152,8 +175,12 @@ public class OrdersController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
+        var productImages = await GetProductImageLookupAsync();
+
         var o = await _db.Orders
             .Include(x => x.Items)
+                .ThenInclude(i => i.ProductVariant!)
+                    .ThenInclude(pv => pv.Product)
             .FirstOrDefaultAsync(x => x.Id == id);
 
         if (o == null) return NotFound(new { message = "Order not found" });
@@ -182,7 +209,8 @@ public class OrdersController : ControllerBase
                 WeightLabel = i.WeightLabel,
                 UnitPrice = i.UnitPrice,
                 Quantity = i.Quantity,
-                TotalPrice = i.TotalPrice
+                TotalPrice = i.TotalPrice,
+                Image = ResolveItemImage(i, productImages)
             }).ToList()
         });
     }
@@ -190,8 +218,12 @@ public class OrdersController : ControllerBase
     [HttpGet("number/{orderNumber}")]
     public async Task<IActionResult> GetByOrderNumber(string orderNumber)
     {
+        var productImages = await GetProductImageLookupAsync();
+
         var o = await _db.Orders
             .Include(x => x.Items)
+                .ThenInclude(i => i.ProductVariant!)
+                    .ThenInclude(pv => pv.Product)
             .FirstOrDefaultAsync(x => x.OrderNumber == orderNumber || x.OrderNumber == "#" + orderNumber);
 
         if (o == null) return NotFound(new { message = "Order not found" });
@@ -219,6 +251,9 @@ public class OrdersController : ControllerBase
                 ProductName = i.ProductName,
                 WeightLabel = i.WeightLabel,
                 UnitPrice = i.UnitPrice,
+                Quantity = i.Quantity,
+                TotalPrice = i.TotalPrice,
+                Image = ResolveItemImage(i, productImages)
             }).ToList()
         });
     }
@@ -228,11 +263,15 @@ public class OrdersController : ControllerBase
     {
         if (string.IsNullOrWhiteSpace(phone)) return Ok(new List<OrderDto>());
 
+        var productImages = await GetProductImageLookupAsync();
+
         var digits = new string(phone.Where(char.IsDigit).ToArray());
         var last10 = digits.Length >= 10 ? digits.Substring(digits.Length - 10) : digits;
 
         var allOrders = await _db.Orders
             .Include(x => x.Items)
+                .ThenInclude(i => i.ProductVariant!)
+                    .ThenInclude(pv => pv.Product)
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync();
 
@@ -267,11 +306,53 @@ public class OrdersController : ControllerBase
                 WeightLabel = i.WeightLabel,
                 UnitPrice = i.UnitPrice,
                 Quantity = i.Quantity,
-                TotalPrice = i.TotalPrice
+                TotalPrice = i.TotalPrice,
+                Image = ResolveItemImage(i, productImages)
             }).ToList()
         }).ToList();
 
         return Ok(dtos);
+    }
+
+    private async Task<Dictionary<string, string>> GetProductImageLookupAsync()
+    {
+        var products = await _db.Products
+            .AsNoTracking()
+            .Where(p => !string.IsNullOrEmpty(p.ImageUrl))
+            .ToListAsync();
+
+        var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var p in products)
+        {
+            if (!string.IsNullOrWhiteSpace(p.Name) && !string.IsNullOrWhiteSpace(p.ImageUrl))
+            {
+                dict[p.Name.Trim()] = p.ImageUrl;
+            }
+        }
+        return dict;
+    }
+
+    private static string? ResolveItemImage(OrderItem i, Dictionary<string, string> productImages)
+    {
+        if (!string.IsNullOrEmpty(i.ProductVariant?.Product?.ImageUrl))
+            return i.ProductVariant.Product.ImageUrl;
+
+        if (!string.IsNullOrEmpty(i.ProductName))
+        {
+            var clean = i.ProductName.Trim();
+            if (productImages.TryGetValue(clean, out var img))
+                return img;
+
+            // Try prefix / partial match
+            var match = productImages.FirstOrDefault(kv => 
+                clean.IndexOf(kv.Key, StringComparison.OrdinalIgnoreCase) >= 0 || 
+                kv.Key.IndexOf(clean, StringComparison.OrdinalIgnoreCase) >= 0);
+            
+            if (!string.IsNullOrEmpty(match.Value))
+                return match.Value;
+        }
+
+        return null;
     }
 
     [HttpPut("{id:guid}/status")]

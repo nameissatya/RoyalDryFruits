@@ -102,6 +102,7 @@ export function AdminProvider({ children }) {
             sku: mainVariant.sku || `RDF-${p.name.substring(0, 3).toUpperCase()}`,
             image: p.imageUrl ? resolveImageUrl(p.imageUrl) : null,
             imageUrl: p.imageUrl ? resolveImageUrl(p.imageUrl) : null,
+            img: p.imageUrl ? resolveImageUrl(p.imageUrl) : null,
             description: p.description || '',
             tags: p.tags ? p.tags.split(',').map(t => t.trim()) : ['Premium'],
             isActive: p.isActive !== false,
@@ -273,6 +274,7 @@ export function AdminProvider({ children }) {
         const formattedOrders = data.map(o => ({
           id: o.orderNumber || `#${String(o.id).substring(0, 5)}`,
           rawId: o.id,
+          createdAt: o.createdAt,
           date: o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : 'Today',
           customer: o.customerName || 'Guest Customer',
           phone: o.customerPhone || 'N/A',

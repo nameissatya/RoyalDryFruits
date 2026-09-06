@@ -103,7 +103,7 @@ export default function CheckoutPage() {
     if (isLoggedIn && user) {
       setFormData(prev => ({
         ...prev,
-        fullName: prev.fullName || user.name || '',
+        fullName: prev.fullName || (user.name !== 'Valued Customer' ? user.name : '') || '',
         phone: prev.phone || user.phone || user.rawPhone || prev.phone,
       }))
     }

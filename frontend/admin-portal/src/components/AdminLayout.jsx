@@ -75,8 +75,8 @@ export default function AdminLayout({ children }) {
                 key={item.path}
                 to={item.path}
                 className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${isActive
-                    ? 'border-l-4 border-primary bg-on-secondary-fixed-variant text-primary font-semibold'
-                    : 'border-l-4 border-transparent text-surface-variant opacity-80 hover:bg-on-secondary-fixed-variant hover:text-white'
+                  ? 'border-l-4 border-primary bg-on-secondary-fixed-variant text-primary font-semibold'
+                  : 'border-l-4 border-transparent text-surface-variant opacity-80 hover:bg-on-secondary-fixed-variant hover:text-white'
                   }`}
               >
                 <span className="material-symbols-outlined text-xl">{item.icon}</span>
@@ -85,30 +85,20 @@ export default function AdminLayout({ children }) {
             );
           })}
         </div>
-
-        {/* Footer info */}
-        <div className="px-md pt-md border-t border-on-secondary-fixed-variant/40">
-          <div className="flex items-center justify-between text-xs text-surface-variant opacity-75">
-            <span>Admin v1.0</span>
-            <span className="bg-primary/20 text-primary px-2 py-0.5 rounded text-[10px] font-bold">ONLINE</span>
-          </div>
-        </div>
       </nav>
 
       {/* Mobile Drawer Backdrop */}
       <div
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300 ${
-          mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300 ${mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          }`}
         onClick={() => setMobileOpen(false)}
         aria-hidden="true"
       />
 
       {/* Mobile Side Drawer Panel */}
       <aside
-        className={`fixed top-0 left-0 bottom-0 w-72 max-w-[85vw] bg-on-secondary-fixed text-white z-50 lg:hidden shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out ${
-          mobileOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`fixed top-0 left-0 bottom-0 w-72 max-w-[85vw] bg-on-secondary-fixed text-white z-50 lg:hidden shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out ${mobileOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
         aria-label="Mobile Navigation Drawer"
       >
         {/* Brand Header + Close Button */}
@@ -160,11 +150,10 @@ export default function AdminLayout({ children }) {
                 key={item.path}
                 to={item.path}
                 onClick={() => setMobileOpen(false)}
-                className={`flex items-center space-x-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all ${
-                  isActive
-                    ? 'bg-on-secondary-fixed-variant text-primary font-bold shadow-sm'
-                    : 'text-surface-variant opacity-85 hover:bg-on-secondary-fixed-variant/60 hover:text-white'
-                }`}
+                className={`flex items-center space-x-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all ${isActive
+                  ? 'bg-on-secondary-fixed-variant text-primary font-bold shadow-sm'
+                  : 'text-surface-variant opacity-85 hover:bg-on-secondary-fixed-variant/60 hover:text-white'
+                  }`}
               >
                 <span className="material-symbols-outlined text-xl">{item.icon}</span>
                 <span>{item.label}</span>
@@ -185,13 +174,6 @@ export default function AdminLayout({ children }) {
             <span className="material-symbols-outlined text-base">logout</span>
             <span>Sign Out of Portal</span>
           </button>
-
-          <div className="flex items-center justify-between text-[11px] text-surface-variant opacity-75 pt-1">
-            <span>Admin v1.0</span>
-            <span className="bg-primary/20 text-primary px-2 py-0.5 rounded text-[10px] font-bold">
-              ONLINE
-            </span>
-          </div>
         </div>
       </aside>
 
@@ -210,10 +192,6 @@ export default function AdminLayout({ children }) {
           </div>
 
           <div className="flex items-center space-x-3 sm:space-x-md">
-            <button className="text-on-surface-variant hover:text-primary p-2 rounded-full hover:bg-surface-container-high transition-colors">
-              <span className="material-symbols-outlined">notifications</span>
-            </button>
-            <div className="h-6 w-px bg-outline-variant hidden sm:block"></div>
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary font-bold flex items-center justify-center text-xs">
                 {adminUser?.email ? adminUser.email.substring(0, 2).toUpperCase() : 'AD'}

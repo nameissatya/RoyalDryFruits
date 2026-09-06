@@ -271,7 +271,7 @@ public class AuthService : IAuthService
         }
 
         var settings = await _db.StoreSettings.FirstOrDefaultAsync();
-        var supportPhone = !string.IsNullOrWhiteSpace(settings?.Phone) ? settings.Phone : "+91 90140 60329";
+        var supportPhone = !string.IsNullOrWhiteSpace(settings?.Phone) ? settings.Phone : "+91 89774 11009";
         var supportWa = new string(supportPhone.Where(char.IsDigit).ToArray());
         if (supportWa.Length == 10) supportWa = "91" + supportWa;
 

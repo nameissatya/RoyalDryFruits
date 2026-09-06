@@ -114,7 +114,7 @@ export default function ProductsPage() {
                     <tr key={product.id} className="hover:bg-surface transition-colors">
                       <td className="p-md">
                         <button type="button" onClick={() => setViewProduct(product)} className="flex items-center gap-3 text-left group">
-                          <img src={product.img} alt="" className="w-11 h-11 rounded-lg object-cover border border-outline-variant bg-surface-container" />
+                          <img src={product.img || product.image || product.imageUrl} alt="" className="w-11 h-11 rounded-lg object-cover border border-outline-variant bg-surface-container" />
                           <span><strong className="block text-sm group-hover:text-primary">{product.name}</strong><span className="text-on-surface-variant">{product.isFeatured ? 'Featured' : 'Standard listing'}</span></span>
                         </button>
                       </td>
@@ -149,7 +149,7 @@ export default function ProductsPage() {
         {viewProduct && (
           <div className="space-y-md text-xs">
             <div className="flex gap-md">
-              <img src={viewProduct.img} alt={viewProduct.name} className="w-20 h-20 rounded-xl object-cover border border-outline-variant" />
+              <img src={viewProduct.img || viewProduct.image || viewProduct.imageUrl} alt={viewProduct.name} className="w-20 h-20 rounded-xl object-cover border border-outline-variant bg-surface-container" />
               <div><h3 className="font-bold text-base">{viewProduct.name}</h3><p className="text-on-surface-variant">{viewProduct.category}</p><p className="mt-2">{viewProduct.description || 'No description provided.'}</p></div>
             </div>
             <div className="border border-outline-variant rounded-lg divide-y divide-outline-variant">

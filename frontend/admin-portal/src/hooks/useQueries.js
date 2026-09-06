@@ -94,6 +94,7 @@ export function useProductsQuery() {
           stock: firstVariant.stockQuantity || 0,
           status: p.isActive ? 'Active' : 'Inactive',
           img: p.imageUrl ? resolveImageUrl(p.imageUrl) : 'https://images.unsplash.com/photo-1508061252222-1d5f3083e589?w=150&auto=format&fit=crop&q=60',
+          image: p.imageUrl ? resolveImageUrl(p.imageUrl) : null,
           imageUrl: p.imageUrl || '',
           description: p.description || '',
           origin: p.origin || 'India',

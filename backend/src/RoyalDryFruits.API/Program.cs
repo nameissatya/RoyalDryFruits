@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using CloudinaryDotNet;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
@@ -125,7 +126,31 @@ catch (Exception ex)
 app.UseCors("AllowFrontendPortals");
 
 // Enable serving static files from wwwroot/
-app.UseStaticFiles();
+// Resolve wwwroot explicitly because ContentRootPath is overridden to AppContext.BaseDirectory
+// which points to bin/Debug/... and doesn't contain the uploaded images.
+var projectWwwRoot = Path.Combine(AppContext.BaseDirectory, "wwwroot");
+
+// Walk up from bin/Debug/net9.0 to find the real project-source wwwroot
+var searchDir = new DirectoryInfo(AppContext.BaseDirectory);
+while (searchDir != null)
+{
+    var candidate = Path.Combine(searchDir.FullName, "wwwroot");
+    if (Directory.Exists(candidate) && Directory.Exists(Path.Combine(candidate, "uploads")))
+    {
+        projectWwwRoot = candidate;
+        break;
+    }
+    searchDir = searchDir.Parent;
+}
+
+if (!Directory.Exists(projectWwwRoot))
+    Directory.CreateDirectory(projectWwwRoot);
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(projectWwwRoot),
+    RequestPath = ""
+});
 
 app.MapOpenApi();
 app.MapScalarApiReference();

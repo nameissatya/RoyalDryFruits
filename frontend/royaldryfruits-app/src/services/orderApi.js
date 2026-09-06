@@ -14,10 +14,12 @@ export async function createOrderApi(orderData) {
       paymentMethod: orderData.paymentMethod || 'COD',
       deliveryCharge: orderData.deliveryCharge || 0,
       items: (orderData.items || []).map(item => ({
-        productName: item.name || 'Product',
-        weightLabel: item.weight || '500g',
-        unitPrice: Number(item.price) || 0,
+        productVariantId: item.variantId || item.productVariantId || null,
+        productName: item.name || item.productName || 'Product',
+        weightLabel: item.weight || item.weightLabel || '500g',
+        unitPrice: Number(item.price || item.unitPrice) || 0,
         quantity: Number(item.quantity) || 1,
+        image: item.image || item.imageUrl || null,
       }))
     }),
   });

@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Package, MapPin, Calendar, MessageSquare, CheckCircle, Clock, Truck, XCircle, ShieldCheck, Lock, RotateCcw } from 'lucide-react'
+import { ArrowLeft, Package, MapPin, Calendar, MessageSquare, CheckCircle, Clock, Truck, XCircle, ShieldCheck, Lock, RotateCcw, Loader2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
 import { fetchOrdersByPhoneApi, fetchAllOrdersApi } from '../services/orderApi'
-import { resolveImageUrl } from '../services/productApi'
+import { resolveImageUrl, fetchProductsApi } from '../services/productApi'
 import { getWhatsAppLink } from '../config/storeConfig'
 
 export default function MyOrdersPage() {
   const { user, isLoggedIn, openAuthModal } = useAuth()
   const { addItem } = useCart()
   const [orders, setOrders] = useState([])
+  const [productCatalog, setProductCatalog] = useState([])
   const [phone, setPhone] = useState('')
   const [isSearching, setIsSearching] = useState(false)
   const [statusFilter, setStatusFilter] = useState('all')
@@ -40,6 +41,11 @@ export default function MyOrdersPage() {
     }
 
     try {
+      // Pre-fetch product catalog to guarantee item images are available even for legacy orders
+      fetchProductsApi().then(catalog => {
+        if (Array.isArray(catalog)) setProductCatalog(catalog)
+      }).catch(() => {})
+
       const activePhone = user?.phone || user?.rawPhone || localStorage.getItem('royaldryfruits_customer_phone') || ''
       if (activePhone) {
         setPhone(activePhone)
@@ -360,31 +366,55 @@ export default function MyOrdersPage() {
 
               {/* Items List */}
               <div className="p-6 divide-y divide-outline-variant/20 space-y-4">
-                {(ord.items || []).map((item, itemIdx) => (
-                  <div key={itemIdx} className="pt-4 first:pt-0 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-xl bg-surface-dim overflow-hidden flex items-center justify-center shrink-0 border border-outline-variant/30">
-                        {item.image ? (
-                          <img src={resolveImageUrl(item.image)} alt={item.productName} className="w-full h-full object-cover" />
-                        ) : (
-                          <Package className="w-7 h-7 text-secondary" />
-                        )}
-                      </div>
-                      <div>
-                        <h4 className="font-body text-body-md font-bold text-on-surface">
-                          {item.productName || 'Royal Dry Fruits Product'}
-                        </h4>
-                        <p className="font-label text-body-xs text-on-surface-variant">
-                          Qty: <span className="font-bold text-on-surface">{item.quantity}</span> ({item.weightLabel || '500g'})
-                        </p>
-                      </div>
-                    </div>
+                {(ord.items || []).map((item, itemIdx) => {
+                  let itemImage = item.image || null
+                  if (!itemImage && productCatalog.length > 0 && item.productName) {
+                    const cleanName = item.productName.trim().toLowerCase()
+                    const matchedProduct = productCatalog.find(p => {
+                      const pName = (p.name || '').trim().toLowerCase()
+                      return pName === cleanName || cleanName.includes(pName) || pName.includes(cleanName)
+                    })
+                    if (matchedProduct && matchedProduct.image) {
+                      itemImage = matchedProduct.image
+                    }
+                  }
 
-                    <div className="font-body text-body-md font-bold text-primary">
-                      {formatPrice(item.totalPrice || item.unitPrice * item.quantity)}
+                  return (
+                    <div key={itemIdx} className="pt-4 first:pt-0 flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 rounded-xl bg-surface-dim overflow-hidden flex items-center justify-center shrink-0 border border-outline-variant/30">
+                          {itemImage ? (
+                            <img
+                              src={resolveImageUrl(itemImage)}
+                              alt={item.productName || 'Product'}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none'
+                                if (e.currentTarget.nextSibling) {
+                                  e.currentTarget.nextSibling.style.display = 'block'
+                                }
+                              }}
+                            />
+                          ) : (
+                            <Package className="w-7 h-7 text-secondary" />
+                          )}
+                        </div>
+                        <div>
+                          <h4 className="font-body text-body-md font-bold text-on-surface">
+                            {item.productName || 'Royal Dry Fruits Product'}
+                          </h4>
+                          <p className="font-label text-body-xs text-on-surface-variant">
+                            Qty: <span className="font-bold text-on-surface">{item.quantity}</span> ({item.weightLabel || '500g'})
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="font-body text-body-md font-bold text-primary">
+                        {formatPrice(item.totalPrice || item.unitPrice * item.quantity)}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
 
               {/* Footer Bar */}

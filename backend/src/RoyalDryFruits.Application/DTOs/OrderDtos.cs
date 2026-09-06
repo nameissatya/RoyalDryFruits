@@ -11,6 +11,7 @@ public class OrderItemDto
     public decimal UnitPrice { get; set; }
     public int Quantity { get; set; }
     public decimal TotalPrice { get; set; }
+    public string? Image { get; set; }
 }
 
 public class OrderDto
@@ -49,6 +50,7 @@ public class CreateOrderItemRequest
     public string WeightLabel { get; set; } = string.Empty;
     public decimal UnitPrice { get; set; }
     public int Quantity { get; set; }
+    public string? Image { get; set; }
 }
 
 public class CreateOrderRequest
