@@ -16,7 +16,8 @@ export async function fetchOrdersApi(status = '') {
 }
 
 export async function fetchOrderByIdApi(id) {
-  const response = await fetch(`${API_BASE_URL}/admin/AdminOrders/${id}`, {
+  const cleanId = encodeURIComponent(String(id || '').trim().replace(/^#/, ''));
+  const response = await fetch(`${API_BASE_URL}/admin/AdminOrders/${cleanId}`, {
     headers: getAuthHeaders(),
   });
   if (!response.ok) {
@@ -36,7 +37,8 @@ export async function updateOrderStatusApi(id, status, cancellationReason = '') 
     else if (s === 'cancelled' || s === 'decline' || s === 'declined' || s === 'rejected') enumStatus = 4;
   }
 
-  const response = await fetch(`${API_BASE_URL}/admin/AdminOrders/${id}/status`, {
+  const cleanId = encodeURIComponent(String(id || '').trim().replace(/^#/, ''));
+  const response = await fetch(`${API_BASE_URL}/admin/AdminOrders/${cleanId}/status`, {
     method: 'PUT',
     headers: getAuthHeaders(),
     body: JSON.stringify({
@@ -46,7 +48,7 @@ export async function updateOrderStatusApi(id, status, cancellationReason = '') 
   });
 
   if (!response.ok) {
-    const fbResponse = await fetch(`${API_BASE_URL}/orders/${id}/status`, {
+    const fbResponse = await fetch(`${API_BASE_URL}/orders/${cleanId}/status`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify({

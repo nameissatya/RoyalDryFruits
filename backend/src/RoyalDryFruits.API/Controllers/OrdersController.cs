@@ -355,10 +355,24 @@ public class OrdersController : ControllerBase
         return null;
     }
 
-    [HttpPut("{id:guid}/status")]
-    public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateOrderStatusRequest req)
+    [HttpPut("{id}/status")]
+    public async Task<IActionResult> UpdateStatus(string id, [FromBody] UpdateOrderStatusRequest req)
     {
-        var order = await _db.Orders.FirstOrDefaultAsync(x => x.Id == id);
+        Order? order = null;
+        if (Guid.TryParse(id, out var guidId))
+        {
+            order = await _db.Orders.FirstOrDefaultAsync(x => x.Id == guidId);
+        }
+
+        if (order == null)
+        {
+            var cleanNumber = id.Trim();
+            order = await _db.Orders.FirstOrDefaultAsync(x => 
+                x.OrderNumber == cleanNumber || 
+                x.OrderNumber == "#" + cleanNumber || 
+                x.OrderNumber == cleanNumber.TrimStart('#'));
+        }
+
         if (order == null) return NotFound(new { message = "Order not found" });
 
         order.Status = req.Status;

@@ -71,16 +71,30 @@ public class AdminOrdersController : ControllerBase
         return Ok(orders);
     }
 
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid id)
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(string id)
     {
         var productImages = await GetProductImageLookupAsync();
 
-        var o = await _db.Orders
-            .Include(x => x.Items)
-                .ThenInclude(i => i.ProductVariant!)
-                    .ThenInclude(pv => pv.Product)
-            .FirstOrDefaultAsync(x => x.Id == id);
+        Order? o = null;
+        if (Guid.TryParse(id, out var guidId))
+        {
+            o = await _db.Orders
+                .Include(x => x.Items)
+                    .ThenInclude(i => i.ProductVariant!)
+                        .ThenInclude(pv => pv.Product)
+                .FirstOrDefaultAsync(x => x.Id == guidId);
+        }
+
+        if (o == null)
+        {
+            var cleanNumber = id.Trim();
+            o = await _db.Orders
+                .Include(x => x.Items)
+                    .ThenInclude(i => i.ProductVariant!)
+                        .ThenInclude(pv => pv.Product)
+                .FirstOrDefaultAsync(x => x.OrderNumber == cleanNumber || x.OrderNumber == "#" + cleanNumber || x.OrderNumber == cleanNumber.TrimStart('#'));
+        }
 
         if (o == null) return NotFound(new { message = "Order not found" });
 
@@ -154,10 +168,24 @@ public class AdminOrdersController : ControllerBase
         return null;
     }
 
-    [HttpPut("{id:guid}/status")]
-    public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateOrderStatusRequest request)
+    [HttpPut("{id}/status")]
+    public async Task<IActionResult> UpdateStatus(string id, [FromBody] UpdateOrderStatusRequest request)
     {
-        var order = await _db.Orders.FindAsync(id);
+        Order? order = null;
+        if (Guid.TryParse(id, out var guidId))
+        {
+            order = await _db.Orders.FirstOrDefaultAsync(x => x.Id == guidId);
+        }
+
+        if (order == null)
+        {
+            var cleanNumber = id.Trim();
+            order = await _db.Orders.FirstOrDefaultAsync(x => 
+                x.OrderNumber == cleanNumber || 
+                x.OrderNumber == "#" + cleanNumber || 
+                x.OrderNumber == cleanNumber.TrimStart('#'));
+        }
+
         if (order == null) return NotFound(new { message = "Order not found" });
 
         order.Status = request.Status;
@@ -176,7 +204,7 @@ public class AdminOrdersController : ControllerBase
         await _db.SaveChangesAsync();
         return Ok(new { 
             message = $"Order status updated to {request.Status}", 
-            status = request.Status.ToString(),
+            status = order.Status.ToString(),
             cancellationReason = order.CancellationReason 
         });
     }

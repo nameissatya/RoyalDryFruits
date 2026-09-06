@@ -527,17 +527,20 @@ export function AdminProvider({ children }) {
   };
 
   const updateOrderStatus = async (orderId, newStatus, cancellationReason = '') => {
+    const ord = orders.find(o => o.id === orderId || o.rawId === orderId);
+    const targetId = ord?.rawId || orderId;
+
     try {
-      await updateOrderStatusApi(orderId, newStatus, cancellationReason);
+      await updateOrderStatusApi(targetId, newStatus, cancellationReason);
       await loadOrders();
-      showToast(`Order ${orderId} updated to ${newStatus}`);
+      showToast(`Order ${ord?.id || orderId} updated to ${newStatus}`);
     } catch (err) {
       console.warn('API error, updating order locally fallback:', err);
-      setOrders(prev => prev.map(o => (o.id === orderId || o.rawId === orderId) 
+      setOrders(prev => prev.map(o => (o.id === orderId || o.rawId === orderId || o.id === targetId || o.rawId === targetId) 
         ? { ...o, status: newStatus, cancellationReason: newStatus === 'Cancelled' ? cancellationReason : '' } 
         : o
       ));
-      showToast(`Order ${orderId} updated to ${newStatus}`);
+      showToast(`Order ${ord?.id || orderId} updated to ${newStatus}`);
     }
   };
 
