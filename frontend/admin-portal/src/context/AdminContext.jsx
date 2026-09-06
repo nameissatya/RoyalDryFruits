@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { fetchCategoriesApi, createCategoryApi, updateCategoryApi, deleteCategoryApi } from '../services/categoryApi';
 import { fetchProductsApi, createProductApi, updateProductApi, deleteProductApi } from '../services/productApi';
-import { fetchOrdersApi, updateOrderStatusApi } from '../services/orderApi';
+import { fetchOrdersApi, updateOrderStatusApi, createStoreOrderApi } from '../services/orderApi';
 import { fetchSettingsApi, updateSettingsApi } from '../services/settingsApi';
 import { fetchCustomersApi, resetCustomerPinApi, unlockCustomerApi } from '../services/customerApi';
 import { resolveImageUrl } from '../services/apiConfig';
@@ -283,6 +283,7 @@ export function AdminProvider({ children }) {
           itemsCount: `${o.items ? o.items.length : 0} items`,
           total: o.totalAmount || 0,
           payment: o.paymentMethod || 'COD',
+          channel: o.channel || 'Online',
           status: parseOrderStatus(o.status, o.statusLabel),
           cancellationReason: o.cancellationReason || '',
           items: (o.items || []).map(i => ({
@@ -544,6 +545,20 @@ export function AdminProvider({ children }) {
     }
   };
 
+  const createStoreOrder = async (orderData) => {
+    try {
+      const created = await createStoreOrderApi(orderData);
+      // Refresh both orders and products to immediately update stock inventory across admin portal
+      await Promise.allSettled([loadOrders(), loadProducts()]);
+      showToast(`In-Store Bill ${created.orderNumber || ''} generated successfully.`);
+      return created;
+    } catch (err) {
+      console.error('POS order creation error:', err);
+      showToast(err.message || 'Failed to complete in-store sale.');
+      throw err;
+    }
+  };
+
   const updateSettings = async (newSettings) => {
     const merged = { ...settings, ...newSettings };
     try {
@@ -597,6 +612,7 @@ export function AdminProvider({ children }) {
         updateProduct,
         deleteProduct,
         updateOrderStatus,
+        createStoreOrder,
         updateSettings,
       }}
     >

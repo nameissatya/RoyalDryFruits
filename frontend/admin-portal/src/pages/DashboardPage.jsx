@@ -2,10 +2,11 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAdmin } from '../context/AdminContext';
 import PageHeader from '../components/ui/PageHeader';
 import StatCard from '../components/ui/StatCard';
-import ComingSoon from '../components/ui/ComingSoon';
 import QuickActions from '../components/dashboard/QuickActions';
 import RecentOrdersTable from '../components/dashboard/RecentOrdersTable';
 import TopProducts from '../components/dashboard/TopProducts';
+import SalesChannelOverview from '../components/dashboard/SalesChannelOverview';
+import LowStockAlerts from '../components/dashboard/LowStockAlerts';
 
 export default function DashboardPage() {
   const { orders, products, loadOrders, loadProducts, isOrdersLoading, isProductsLoading } = useAdmin();
@@ -145,20 +146,20 @@ export default function DashboardPage() {
         ))}
       </div>
 
+      {/* Online vs Offline Channel Sales Analytics */}
+      <SalesChannelOverview orders={filteredOrders} />
+
       {/* Recent Orders + Top Products */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-md">
         <RecentOrdersTable orders={filteredOrders} />
         <TopProducts products={topProducts} />
       </div>
 
-      {/* Sales Overview + Quick Actions */}
+      {/* Low Stock Alerts + Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-md">
-        <ComingSoon
-          className="lg:col-span-2"
-          title="Sales Overview"
-          icon="bar_chart"
-          description="Revenue trends, order insights, and sales performance metrics will appear here."
-        />
+        <div className="lg:col-span-2">
+          <LowStockAlerts products={products} />
+        </div>
         <QuickActions />
       </div>
     </div>

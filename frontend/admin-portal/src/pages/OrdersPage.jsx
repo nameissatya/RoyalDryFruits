@@ -12,6 +12,7 @@ export default function OrdersPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const urlStatus = searchParams.get('status');
   const [statusFilter, setStatusFilter] = useState(urlStatus ? urlStatus.toLowerCase() : 'all');
+  const [channelFilter, setChannelFilter] = useState('all'); // 'all', 'online', 'offline'
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOrder, setSelectedOrder] = useState(null);
 
@@ -63,10 +64,21 @@ export default function OrdersPage() {
     setCancelOrderTarget(null);
   };
 
+  // Channel counts
+  const channelCounts = useMemo(() => {
+    const counts = { all: orders.length, online: 0, offline: 0 };
+    orders.forEach(o => {
+      const ch = (o.channel || 'Online').toLowerCase();
+      if (ch === 'offline') counts.offline++;
+      else counts.online++;
+    });
+    return counts;
+  }, [orders]);
+
   // Status counts for filter pills
   const statusCounts = useMemo(() => {
     const counts = {
-      all: orders.length,
+      all: 0,
       pending: 0,
       confirmed: 0,
       outfordelivery: 0,
@@ -74,6 +86,11 @@ export default function OrdersPage() {
       cancelled: 0,
     };
     orders.forEach(o => {
+      // Respect channel filter if selected
+      const ch = (o.channel || 'Online').toLowerCase();
+      if (channelFilter !== 'all' && ch !== channelFilter) return;
+
+      counts.all++;
       const s = String(o.status || 'Pending').toLowerCase().replace(/\s+/g, '');
       if (s === 'pending') counts.pending++;
       else if (s === 'confirmed' || s === 'accept' || s === 'accepted') counts.confirmed++;
@@ -82,11 +99,18 @@ export default function OrdersPage() {
       else if (s === 'cancelled') counts.cancelled++;
     });
     return counts;
-  }, [orders]);
+  }, [orders, channelFilter]);
 
   const filteredOrders = useMemo(() => {
     return (orders || []).filter(o => {
       if (!o) return false;
+
+      // Channel Filter match
+      if (channelFilter !== 'all') {
+        const ch = (o.channel || 'Online').toLowerCase();
+        if (channelFilter !== ch) return false;
+      }
+
       const s = String(o.status || 'Pending').toLowerCase().replace(/\s+/g, '');
       const filterKey = statusFilter.toLowerCase().replace(/\s+/g, '');
 
@@ -110,7 +134,7 @@ export default function OrdersPage() {
 
       return true;
     });
-  }, [orders, statusFilter, searchQuery]);
+  }, [orders, statusFilter, channelFilter, searchQuery]);
 
   const REASON_CHIPS = [
     'Item out of stock in warehouse',
@@ -164,6 +188,39 @@ export default function OrdersPage() {
 
       {/* Filter Tabs and Search Bar */}
       <div className="bg-surface-container-lowest p-4 rounded-xl border border-surface-variant shadow-sm space-y-4">
+        {/* Channel Selector Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-surface-container-high">
+          <div className="flex items-center gap-2 text-xs">
+            <span className="font-bold text-on-surface-variant flex items-center gap-1">
+              <span className="material-symbols-outlined text-base text-primary">filter_alt</span>
+              Sales Channel:
+            </span>
+            <div className="inline-flex rounded-lg bg-surface-container p-1 border border-outline-variant">
+              {[
+                { key: 'all', label: 'All Channels', count: channelCounts.all, icon: 'apps' },
+                { key: 'online', label: '🌐 Online Store', count: channelCounts.online },
+                { key: 'offline', label: '🏬 In-Store POS', count: channelCounts.offline },
+              ].map((c) => (
+                <button
+                  key={c.key}
+                  type="button"
+                  onClick={() => setChannelFilter(c.key)}
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-md font-bold text-xs transition-all cursor-pointer ${
+                    channelFilter === c.key
+                      ? 'bg-primary text-on-primary shadow-sm'
+                      : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+                  }`}
+                >
+                  <span>{c.label}</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${channelFilter === c.key ? 'bg-white/20 text-white' : 'bg-surface-container-highest text-on-surface-variant'}`}>
+                    {c.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           {/* Status Filter Tabs */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
@@ -242,6 +299,7 @@ export default function OrdersPage() {
             <thead>
               <tr className="bg-surface-bright border-b border-surface-variant text-on-surface-variant uppercase font-semibold">
                 <th className="py-3.5 px-5">Order ID</th>
+                <th className="py-3.5 px-5">Channel</th>
                 <th className="py-3.5 px-5">Customer</th>
                 <th className="py-3.5 px-5">Items</th>
                 <th className="py-3.5 px-5">Total</th>
@@ -254,13 +312,13 @@ export default function OrdersPage() {
             <tbody className="divide-y divide-surface-variant">
               {filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-on-surface-variant">
+                  <td colSpan={9} className="py-12 text-center text-on-surface-variant">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <span className="material-symbols-outlined text-4xl text-on-surface-variant opacity-40">
                         receipt_long
                       </span>
                       <p className="font-semibold text-sm">No orders match the selected filter</p>
-                      <p className="text-xs opacity-75">Try switching status tabs or clear the search query.</p>
+                      <p className="text-xs opacity-75">Try switching status/channel tabs or clear the search query.</p>
                     </div>
                   </td>
                 </tr>
@@ -272,6 +330,7 @@ export default function OrdersPage() {
                   const isDispatched = statusClean === 'outfordelivery' || statusClean === 'dispatched' || statusClean === 'shipped';
                   const isDelivered = statusClean === 'delivered';
                   const isCancelled = statusClean === 'cancelled';
+                  const isOffline = (ord.channel || 'Online').toLowerCase() === 'offline';
 
                   return (
                     <tr
@@ -281,6 +340,19 @@ export default function OrdersPage() {
                       }`}
                     >
                       <td className="py-3.5 px-5 font-bold text-primary">{ord.id}</td>
+                      <td className="py-3.5 px-5">
+                        {isOffline ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 whitespace-nowrap">
+                            <span className="material-symbols-outlined text-xs">storefront</span>
+                            In-Store POS
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-300 whitespace-nowrap">
+                            <span className="material-symbols-outlined text-xs">language</span>
+                            Online Web
+                          </span>
+                        )}
+                      </td>
                       <td className="py-3.5 px-5">
                         <div className="flex flex-col">
                           <span className="font-semibold text-on-surface">{ord.customer}</span>
@@ -640,10 +712,24 @@ export default function OrdersPage() {
               </div>
             </div>
 
-            {/* Status & Payment Banner */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* Status, Channel & Payment Banner */}
+            <div className="grid grid-cols-3 gap-3">
               <div className="bg-surface-container-low p-3 rounded-lg border border-surface-variant">
-                <span className="text-on-surface-variant block mb-1">Current Status</span>
+                <span className="text-on-surface-variant block mb-1 text-[11px]">Channel</span>
+                {(selectedOrder.channel || 'Online').toLowerCase() === 'offline' ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                    <span className="material-symbols-outlined text-xs">storefront</span>
+                    In-Store POS
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-800 border border-blue-300">
+                    <span className="material-symbols-outlined text-xs">language</span>
+                    Online Web
+                  </span>
+                )}
+              </div>
+              <div className="bg-surface-container-low p-3 rounded-lg border border-surface-variant">
+                <span className="text-on-surface-variant block mb-1 text-[11px]">Current Status</span>
                 <Badge variant={getStatusBadgeVariant(selectedOrder.status)}>
                   <span className="flex items-center gap-1">
                     <span className="material-symbols-outlined text-xs">
@@ -654,8 +740,8 @@ export default function OrdersPage() {
                 </Badge>
               </div>
               <div className="bg-surface-container-low p-3 rounded-lg border border-surface-variant">
-                <span className="text-on-surface-variant block mb-1">Payment Method</span>
-                <span className="font-semibold uppercase text-on-surface">{selectedOrder.payment}</span>
+                <span className="text-on-surface-variant block mb-1 text-[11px]">Payment Method</span>
+                <span className="font-semibold uppercase text-on-surface text-xs">{selectedOrder.payment}</span>
               </div>
             </div>
 

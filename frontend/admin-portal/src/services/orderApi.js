@@ -1,9 +1,12 @@
 import { API_BASE_URL, getAuthHeaders } from './apiConfig';
 
-export async function fetchOrdersApi(status = '') {
-  const url = status && status !== 'All' 
-    ? `${API_BASE_URL}/admin/AdminOrders?status=${encodeURIComponent(status)}`
-    : `${API_BASE_URL}/admin/AdminOrders`;
+export async function fetchOrdersApi(status = '', channel = '') {
+  const params = new URLSearchParams();
+  if (status && status !== 'All' && status !== 'all') params.append('status', status);
+  if (channel && channel !== 'All' && channel !== 'all') params.append('channel', channel);
+
+  const queryStr = params.toString() ? `?${params.toString()}` : '';
+  const url = `${API_BASE_URL}/admin/AdminOrders${queryStr}`;
 
   const response = await fetch(url, {
     headers: getAuthHeaders(),
@@ -12,6 +15,40 @@ export async function fetchOrdersApi(status = '') {
   if (!response.ok) {
     throw new Error('Failed to fetch orders');
   }
+  return await response.json();
+}
+
+export async function createStoreOrderApi(orderData) {
+  const response = await fetch(`${API_BASE_URL}/admin/AdminOrders/pos`, {
+    method: 'POST',
+    headers: {
+      ...getAuthHeaders(),
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      customerName: orderData.customerName || 'Walk-in Customer',
+      customerPhone: orderData.customerPhone || '',
+      customerEmail: orderData.customerEmail || '',
+      deliveryAddress: orderData.deliveryAddress || 'Store Counter / Walk-in',
+      paymentMethod: orderData.paymentMethod || 'Cash',
+      deliveryCharge: orderData.deliveryCharge || 0,
+      channel: 'Offline',
+      items: (orderData.items || []).map(item => ({
+        productVariantId: item.productVariantId || item.variantId || null,
+        productName: item.name || item.productName || 'Product',
+        weightLabel: item.weight || item.weightLabel || '500g',
+        unitPrice: Number(item.price || item.unitPrice) || 0,
+        quantity: Number(item.quantity) || 1,
+        image: item.image || item.imageUrl || null,
+      })),
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to create in-store POS order');
+  }
+
   return await response.json();
 }
 

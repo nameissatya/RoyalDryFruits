@@ -45,6 +45,7 @@ public class OrdersController : ControllerBase
             CustomerEmail = req.CustomerEmail?.Trim() ?? string.Empty,
             DeliveryAddress = req.DeliveryAddress?.Trim() ?? string.Empty,
             PaymentMethod = string.IsNullOrWhiteSpace(req.PaymentMethod) ? "COD" : req.PaymentMethod.Trim(),
+            Channel = string.IsNullOrWhiteSpace(req.Channel) ? "Online" : req.Channel.Trim(),
             SubTotal = subTotal,
             DeliveryCharge = req.DeliveryCharge,
             TotalAmount = totalAmount,
@@ -82,6 +83,17 @@ public class OrdersController : ControllerBase
                 }
             }
 
+            // Deduct stock quantity for the variant
+            if (validVariantId.HasValue)
+            {
+                var variantEntity = await _db.ProductVariants.FindAsync(validVariantId.Value);
+                if (variantEntity != null)
+                {
+                    var qtyToDeduct = item.Quantity > 0 ? item.Quantity : 1;
+                    variantEntity.StockQuantity = Math.Max(0, variantEntity.StockQuantity - qtyToDeduct);
+                }
+            }
+
             order.Items.Add(new OrderItem
             {
                 Id = Guid.NewGuid(),
@@ -111,6 +123,7 @@ public class OrdersController : ControllerBase
             TotalAmount = order.TotalAmount,
             Status = order.Status,
             PaymentMethod = order.PaymentMethod,
+            Channel = order.Channel,
             CreatedAt = order.CreatedAt,
             Items = order.Items.Select(i => new OrderItemDto
             {
@@ -154,6 +167,7 @@ public class OrdersController : ControllerBase
             Status = o.Status,
             CancellationReason = o.CancellationReason,
             PaymentMethod = o.PaymentMethod,
+            Channel = o.Channel ?? "Online",
             CreatedAt = o.CreatedAt,
             UpdatedAt = o.UpdatedAt,
             Items = o.Items.Select(i => new OrderItemDto
@@ -199,6 +213,7 @@ public class OrdersController : ControllerBase
             Status = o.Status,
             CancellationReason = o.CancellationReason,
             PaymentMethod = o.PaymentMethod,
+            Channel = o.Channel ?? "Online",
             CreatedAt = o.CreatedAt,
             UpdatedAt = o.UpdatedAt,
             Items = o.Items.Select(i => new OrderItemDto
@@ -242,6 +257,7 @@ public class OrdersController : ControllerBase
             Status = o.Status,
             CancellationReason = o.CancellationReason,
             PaymentMethod = o.PaymentMethod,
+            Channel = o.Channel ?? "Online",
             CreatedAt = o.CreatedAt,
             UpdatedAt = o.UpdatedAt,
             Items = o.Items.Select(i => new OrderItemDto
@@ -296,6 +312,7 @@ public class OrdersController : ControllerBase
             Status = o.Status,
             CancellationReason = o.CancellationReason,
             PaymentMethod = o.PaymentMethod,
+            Channel = o.Channel ?? "Online",
             CreatedAt = o.CreatedAt,
             UpdatedAt = o.UpdatedAt,
             Items = o.Items.Select(i => new OrderItemDto
@@ -361,31 +378,67 @@ public class OrdersController : ControllerBase
         Order? order = null;
         if (Guid.TryParse(id, out var guidId))
         {
-            order = await _db.Orders.FirstOrDefaultAsync(x => x.Id == guidId);
+            order = await _db.Orders
+                .Include(x => x.Items)
+                .FirstOrDefaultAsync(x => x.Id == guidId);
         }
 
         if (order == null)
         {
             var cleanNumber = id.Trim();
-            order = await _db.Orders.FirstOrDefaultAsync(x => 
-                x.OrderNumber == cleanNumber || 
-                x.OrderNumber == "#" + cleanNumber || 
-                x.OrderNumber == cleanNumber.TrimStart('#'));
+            order = await _db.Orders
+                .Include(x => x.Items)
+                .FirstOrDefaultAsync(x => 
+                    x.OrderNumber == cleanNumber || 
+                    x.OrderNumber == "#" + cleanNumber || 
+                    x.OrderNumber == cleanNumber.TrimStart('#'));
         }
 
         if (order == null) return NotFound(new { message = "Order not found" });
 
+        var previousStatus = order.Status;
         order.Status = req.Status;
-        if (req.Status == OrderStatus.Cancelled)
+
+        // Stock management on status change
+        if (previousStatus != OrderStatus.Cancelled && req.Status == OrderStatus.Cancelled)
         {
+            // Restore inventory
+            foreach (var item in order.Items)
+            {
+                if (item.ProductVariantId.HasValue)
+                {
+                    var variant = await _db.ProductVariants.FindAsync(item.ProductVariantId.Value);
+                    if (variant != null)
+                    {
+                        variant.StockQuantity += item.Quantity;
+                    }
+                }
+            }
             order.CancellationReason = string.IsNullOrWhiteSpace(req.CancellationReason)
                 ? "Declined by store administrator"
                 : req.CancellationReason.Trim();
         }
-        else
+        else if (previousStatus == OrderStatus.Cancelled && req.Status != OrderStatus.Cancelled)
+        {
+            // Re-deduct inventory
+            foreach (var item in order.Items)
+            {
+                if (item.ProductVariantId.HasValue)
+                {
+                    var variant = await _db.ProductVariants.FindAsync(item.ProductVariantId.Value);
+                    if (variant != null)
+                    {
+                        variant.StockQuantity = Math.Max(0, variant.StockQuantity - item.Quantity);
+                    }
+                }
+            }
+            order.CancellationReason = null;
+        }
+        else if (req.Status != OrderStatus.Cancelled)
         {
             order.CancellationReason = null;
         }
+
         order.UpdatedAt = DateTime.UtcNow;
 
         await _db.SaveChangesAsync();

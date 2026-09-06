@@ -15,6 +15,7 @@ public static class DbInitializer
                 ALTER TABLE ""Products"" ADD COLUMN IF NOT EXISTS ""ReviewsCount"" integer NOT NULL DEFAULT 0;
                 ALTER TABLE ""OrderItems"" ALTER COLUMN ""ProductVariantId"" DROP NOT NULL;
                 ALTER TABLE ""Orders"" ADD COLUMN IF NOT EXISTS ""CancellationReason"" text;
+                ALTER TABLE ""Orders"" ADD COLUMN IF NOT EXISTS ""Channel"" text NOT NULL DEFAULT 'Online';
                 ALTER TABLE ""StoreSettings"" ADD COLUMN IF NOT EXISTS ""DeliveryRadius"" double precision NOT NULL DEFAULT 0.0;
                 ALTER TABLE ""StoreSettings"" ADD COLUMN IF NOT EXISTS ""FreeDeliveryRadius"" double precision NOT NULL DEFAULT 0.0;
                 ALTER TABLE ""Users"" ADD COLUMN IF NOT EXISTS ""FailedLoginAttempts"" integer NOT NULL DEFAULT 0;

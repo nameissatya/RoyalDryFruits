@@ -3,19 +3,24 @@ import { Link } from 'react-router-dom';
 
 const actions = [
   {
+    to: '/pos',
+    icon: 'point_of_sale',
+    label: 'Walk-in POS Billing',
+  },
+  {
+    to: '/inventory',
+    icon: 'inventory_2',
+    label: 'Manage Stock & Inventory',
+  },
+  {
     to: '/products/add',
     icon: 'add_circle',
     label: 'Add New Product',
   },
   {
-    to: '/categories',
-    icon: 'category',
-    label: 'Manage Categories',
-  },
-  {
     to: '/orders',
     icon: 'shopping_cart',
-    label: 'Fulfill Pending Orders',
+    label: 'Fulfill Customer Orders',
   },
 ];
 

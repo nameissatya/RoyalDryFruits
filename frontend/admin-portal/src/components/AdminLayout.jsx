@@ -37,7 +37,8 @@ export default function AdminLayout({ children }) {
 
   const navItems = [
     { label: 'Dashboard', path: '/', icon: 'dashboard' },
-    { label: 'Products', path: '/products', icon: 'inventory_2' },
+    { label: 'Store POS Billing', path: '/pos', icon: 'point_of_sale' },
+    { label: 'Products & Stock', path: '/products', icon: 'inventory_2' },
     { label: 'Categories', path: '/categories', icon: 'category' },
     { label: 'Orders', path: '/orders', icon: 'shopping_cart' },
     { label: 'Customers', path: '/customers', icon: 'group' },

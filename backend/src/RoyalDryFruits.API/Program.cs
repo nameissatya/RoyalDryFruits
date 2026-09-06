@@ -46,9 +46,12 @@ builder.Services.AddSingleton(cloudinary);
 builder.Services.AddControllers();
 builder.Services.AddHttpClient();
 builder.Services.AddInfrastructureServices();
-// Build connection string - handle Render's postgres:// URL format
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (!string.IsNullOrEmpty(connectionString) && connectionString.StartsWith("postgres"))
+// Build connection string - handle Render/Neon/Supabase postgres:// URL format and env fallbacks
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? Environment.GetEnvironmentVariable("DATABASE_URL")
+    ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+
+if (!string.IsNullOrEmpty(connectionString) && (connectionString.StartsWith("postgres://") || connectionString.StartsWith("postgresql://")))
 {
     var uri = new Uri(connectionString);
     var userInfo = uri.UserInfo.Split(':');
@@ -61,6 +64,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddOpenApi();
 
+var jwtKey = builder.Configuration["Jwt:Key"] 
+    ?? Environment.GetEnvironmentVariable("JWT_KEY") 
+    ?? Environment.GetEnvironmentVariable("JWT_SECRET") 
+    ?? "RoyalDryFruits-super-secret-key-production-ready-2026";
+
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -72,13 +80,11 @@ builder.Services
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
 
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "RoyalDryFruits",
+            ValidAudience = builder.Configuration["Jwt:Audience"] ?? "RoyalDryFruitsUsers",
 
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(
-                    builder.Configuration["Jwt:Key"]!
-                ))
+                Encoding.UTF8.GetBytes(jwtKey))
         };
     });
 

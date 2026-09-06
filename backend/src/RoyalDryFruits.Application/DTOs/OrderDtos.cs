@@ -31,6 +31,7 @@ public class OrderDto
     public string StatusLabel => Status.ToString();
     public string? CancellationReason { get; set; }
     public string PaymentMethod { get; set; } = "COD";
+    public string Channel { get; set; } = "Online";
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 
@@ -60,6 +61,7 @@ public class CreateOrderRequest
     public string CustomerEmail { get; set; } = string.Empty;
     public string DeliveryAddress { get; set; } = string.Empty;
     public string PaymentMethod { get; set; } = "COD";
+    public string Channel { get; set; } = "Online";
     public decimal DeliveryCharge { get; set; } = 0;
     public List<CreateOrderItemRequest> Items { get; set; } = new();
 }

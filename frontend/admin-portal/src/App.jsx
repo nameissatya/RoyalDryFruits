@@ -9,6 +9,7 @@ import CustomersPage from './pages/CustomersPage';
 import SettingsPage from './pages/SettingsPage';
 import ProductsPage from './pages/ProductsPage';
 import ProductFormPage from './pages/ProductFormPage';
+import PosBillingPage from './pages/PosBillingPage';
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
 
@@ -21,6 +22,7 @@ export default function App() {
 
       {/* Protected Admin Portal Routes */}
       <Route path="/" element={<ProtectedRoute><AdminLayout><DashboardPage /></AdminLayout></ProtectedRoute>} />
+      <Route path="/pos" element={<ProtectedRoute><AdminLayout><PosBillingPage /></AdminLayout></ProtectedRoute>} />
       <Route path="/products" element={<ProtectedRoute><AdminLayout><ProductsPage /></AdminLayout></ProtectedRoute>} />
       <Route path="/products/add" element={<ProtectedRoute><AdminLayout><ProductFormPage /></AdminLayout></ProtectedRoute>} />
       <Route path="/products/:productId/edit" element={<ProtectedRoute><AdminLayout><ProductFormPage /></AdminLayout></ProtectedRoute>} />

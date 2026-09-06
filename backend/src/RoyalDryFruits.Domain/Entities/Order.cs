@@ -21,6 +21,7 @@ public class Order
     public OrderStatus Status { get; set; } = OrderStatus.Pending;
     public string? CancellationReason { get; set; }
     public string PaymentMethod { get; set; } = "COD";
+    public string Channel { get; set; } = "Online";
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
